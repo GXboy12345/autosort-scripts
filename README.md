@@ -39,15 +39,47 @@ Double-click the `run-autosort.command` file to execute the script.
 
 ## Configuration
 
-### Ignoring Files
-Create a `.sortignore` file in the same directory as the script to specify files that should not be moved:
+### Ignoring Files with .sortignore
+
+Create a `.sortignore` file in the same directory as the script to specify files and folders that should not be moved during the sorting process.
+
+#### .sortignore File Format
+
+The `.sortignore` file uses simple pattern matching:
+- One pattern per line
+- Lines starting with `#` are treated as comments
+- Supports wildcards (`*`) for matching multiple files
+- Supports exact file names
+
+#### Example .sortignore File
 
 ```
-# Example .sortignore file
-*.tmp
-temp_*
+# System files
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+temp_*
+~*
+
+# Specific files to keep on Desktop
+important_document.pdf
+my_project/
+
+# File patterns
+*.log
+backup_*
 ```
+
+#### How .sortignore Works
+
+- Files matching any pattern in `.sortignore` will remain on your Desktop
+- The script reads the `.sortignore` file before starting the sorting process
+- If no `.sortignore` file exists, all files will be processed normally
+- The file is case-sensitive on most systems
 
 ### Custom Categories
 You can modify the extension sets in the script to add or remove file types from categories.
