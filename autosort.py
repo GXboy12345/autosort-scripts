@@ -7,6 +7,9 @@ This script automatically organizes files on your Desktop into categorized folde
 Requirements:
 - Python 3.6+
 - macOS (for Desktop path detection)
+
+Copyright (c) 2024 Gboy
+Licensed under the MIT License - see LICENSE file for details.
 """
 
 import fnmatch
