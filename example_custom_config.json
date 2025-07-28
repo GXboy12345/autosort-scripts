@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "auto_generated": false,
+    "last_updated": "2024-01-01",
+    "note": "This is a custom configuration example - set auto_generated to false to prevent automatic updates"
+  },
+  "categories": {
+    "Images": {
+      "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".heic", ".raw", ".svg", ".webp", ".psd", ".ai", ".eps", ".ico", ".avif", ".jxl", ".jp2", ".j2k", ".jpf", ".jpx", ".tga", ".dng", ".cr2", ".nef", ".orf", ".arw", ".icns"],
+      "folder_name": "Images"
+    },
+    "Audio": {
+      "extensions": [".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg", ".wma", ".aiff", ".alac", ".opus", ".amr", ".mid", ".midi", ".wv", ".ra", ".ape", ".dts"],
+      "folder_name": "Audio"
+    },
+    "Video": {
+      "extensions": [".mp4", ".mov", ".avi", ".mkv", ".flv", ".wmv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg", ".ts", ".m2ts", ".mts", ".m2v", ".divx", ".ogv", ".h264", ".h265", ".hevc", ".vob", ".rm", ".asf", ".mxf"],
+      "folder_name": "Video"
+    },
+    "Documents": {
+      "extensions": [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".pages", ".key", ".numbers", ".odt", ".ods", ".odp"],
+      "folder_name": "Documents"
+    },
+    "Code": {
+      "extensions": [".py", ".js", ".sh", ".rb", ".pl", ".c", ".cpp", ".h", ".java", ".go", ".rs", ".ts", ".jsx", ".tsx", ".php", ".swift", ".kt", ".kts", ".scala", ".ps1", ".cs", ".dart", ".r", ".m", ".lua", ".html", ".htm", ".css", ".scss", ".less", ".vue", ".svelte", ".sql"],
+      "folder_name": "Code"
+    },
+    "Archives": {
+      "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".tgz", ".tar.gz", ".tar.bz2", ".tar.xz", ".zst", ".zstd", ".lz", ".lzma", ".cab", ".ace", ".arj"],
+      "folder_name": "Archives"
+    },
+    "Miscellaneous": {
+      "extensions": [],
+      "folder_name": "Miscellaneous"
+    },
+    "MyCustomCategory": {
+      "extensions": [".myfile", ".custom", ".special", ".project"],
+      "folder_name": "My Custom Files"
+    },
+    "GameFiles": {
+      "extensions": [".sav", ".save", ".dat", ".cfg", ".ini", ".log", ".mod", ".pak", ".wad", ".bsp", ".map"],
+      "folder_name": "Game Files"
+    },
+    "CADFiles": {
+      "extensions": [".dwg", ".dxf", ".dgn", ".skp", ".3dm", ".ipt", ".iam", ".prt", ".asm", ".sldprt", ".sldasm"],
+      "folder_name": "CAD Files"
+    },
+    "Photography": {
+      "extensions": [".cr2", ".nef", ".arw", ".orf", ".dng", ".raf", ".rw2", ".pef", ".srw", ".x3f", ".mrw", ".raw"],
+      "folder_name": "Photography RAW"
+    }
+  }
+} 

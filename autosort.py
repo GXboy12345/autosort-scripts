@@ -16,12 +16,90 @@ import fnmatch
 import shutil
 import os
 import sys
+import json
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Set
 
 # —— Configuration —— #
 SCRIPT_DIR   = Path(__file__).resolve().parent
 IGNORE_FILE  = SCRIPT_DIR / '.sortignore'
+CONFIG_FILE  = SCRIPT_DIR / 'autosort_config.json'
+
+# Default configuration
+DEFAULT_CONFIG = {
+    "metadata": {
+        "version": "1.0",
+        "auto_generated": True,
+        "last_updated": "2024-01-01",
+        "note": "This is the default configuration - set auto_generated to false to prevent automatic updates"
+    },
+    "categories": {
+        "Images": {
+            "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".heic", ".raw", ".svg", ".webp", ".psd", ".ai", ".eps", ".ico", ".avif", ".jxl", ".jp2", ".j2k", ".jpf", ".jpx", ".tga", ".dng", ".cr2", ".nef", ".orf", ".arw", ".icns"],
+            "folder_name": "Images"
+        },
+        "Audio": {
+            "extensions": [".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg", ".wma", ".aiff", ".alac", ".opus", ".amr", ".mid", ".midi", ".wv", ".ra", ".ape", ".dts"],
+            "folder_name": "Audio"
+        },
+        "Video": {
+            "extensions": [".mp4", ".mov", ".avi", ".mkv", ".flv", ".wmv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg", ".ts", ".m2ts", ".mts", ".m2v", ".divx", ".ogv", ".h264", ".h265", ".hevc", ".vob", ".rm", ".asf", ".mxf"],
+            "folder_name": "Video"
+        },
+        "Text": {
+            "extensions": [".txt", ".md", ".rtf", ".log", ".csv", ".tex", ".json", ".xml", ".yaml", ".yml", ".ini", ".cfg", ".conf", ".toml", ".adoc", ".asciidoc", ".rst", ".properties"],
+            "folder_name": "Text"
+        },
+        "Documents": {
+            "extensions": [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".pages", ".key", ".numbers", ".odt", ".ods", ".odp"],
+            "folder_name": "Documents"
+        },
+        "Code": {
+            "extensions": [".py", ".js", ".sh", ".rb", ".pl", ".c", ".cpp", ".h", ".java", ".go", ".rs", ".ts", ".jsx", ".tsx", ".php", ".swift", ".kt", ".kts", ".scala", ".ps1", ".cs", ".dart", ".r", ".m", ".lua", ".html", ".htm", ".css", ".scss", ".less", ".vue", ".svelte", ".sql"],
+            "folder_name": "Code"
+        },
+        "Archives": {
+            "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".tgz", ".tar.gz", ".tar.bz2", ".tar.xz", ".zst", ".zstd", ".lz", ".lzma", ".cab", ".ace", ".arj"],
+            "folder_name": "Archives"
+        },
+        "Minecraft": {
+            "extensions": [".jar", ".schem", ".schematic", ".litematic", ".nbt", ".mcfunction"],
+            "folder_name": "Minecraft"
+        },
+        "NonMac": {
+            "extensions": [".exe", ".msi", ".dll", ".com", ".bat", ".cmd", ".sys", ".apk", ".appimage", ".scr", ".deb", ".rpm", ".cab", ".pkg"],
+            "folder_name": "Non-Mac Files"
+        },
+        "DiskImages": {
+            "extensions": [".dmg", ".iso", ".img", ".bin", ".toast", ".toast.gz", ".toast.bz2", ".toast.xz", ".toast.tar", ".toast.tar.gz", ".toast.tar.bz2", ".toast.tar.xz", ".vhd", ".vhdx", ".vmdk", ".qcow2"],
+            "folder_name": "Disk Images"
+        },
+        "Reaper": {
+            "extensions": [".rpp", ".rpl", ".rpreset", ".rpp.gz", ".rpp.bz2", ".rpp.xz", ".rpp.tar", ".rpp.tar.gz", ".rpp.tar.bz2", ".rpp.tar.xz"],
+            "folder_name": "Reaper Projects"
+        },
+        "MusicScores": {
+            "extensions": [".mscz", ".mscx", ".mscx.gz", ".mscx.bz2", ".mscx.xz", ".mscx.tar", ".mscx.tar.gz", ".mscx.tar.bz2", ".mscx.tar.xz"],
+            "folder_name": "Music Scores"
+        },
+        "3DModels": {
+            "extensions": [".stl", ".obj", ".fbx", ".dae", ".3ds", ".ply", ".glb", ".gltf", ".blend", ".3mf", ".igs", ".iges", ".stp", ".step"],
+            "folder_name": "3D Models"
+        },
+        "eBooks": {
+            "extensions": [".epub", ".mobi", ".azw", ".azw3", ".fb2"],
+            "folder_name": "eBooks"
+        },
+        "Fonts": {
+            "extensions": [".ttf", ".otf", ".woff", ".woff2", ".fnt"],
+            "folder_name": "Fonts"
+        },
+        "Miscellaneous": {
+            "extensions": [],
+            "folder_name": "Miscellaneous"
+        }
+    }
+}
 
 # macOS-specific Desktop path detection
 def get_desktop_path() -> Path:
@@ -45,23 +123,139 @@ def get_desktop_path() -> Path:
 DESKTOP_DIR  = get_desktop_path()
 TARGET_ROOT  = DESKTOP_DIR / 'Autosort'
 
-# Extension sets
-IMAGE_EXTS      = {'.jpg','.jpeg','.png','.gif','.bmp','.tiff','.tif','.heic','.raw','.svg','.webp','.psd','.ai','.eps','.ico',
-                    '.avif','.jxl','.jp2','.j2k','.jpf','.jpx','.tga','.dng','.cr2','.nef','.orf','.arw','.icns'}
-AUDIO_EXTS      = {'.mp3','.wav','.flac','.aac','.m4a','.ogg','.wma','.aiff','.alac','.opus','.amr','.mid','.midi','.wv','.ra','.ape','.dts'}
-VIDEO_EXTS      = {'.mp4','.mov','.avi','.mkv','.flv','.wmv','.webm','.m4v','.3gp','.mpeg','.mpg','.ts','.m2ts','.mts','.m2v','.divx','.ogv','.h264','.h265','.hevc','.vob','.rm','.asf','.mxf'}
-TEXT_EXTS       = {'.txt','.md','.rtf','.log','.csv','.tex','.json','.xml','.yaml','.yml','.ini','.cfg','.conf','.toml','.adoc','.asciidoc','.rst','.properties'}
-ARCHIVE_EXTS    = {'.zip','.rar','.7z','.tar','.gz','.bz2','.xz','.tgz','.tar.gz','.tar.bz2','.tar.xz','.zst','.zstd','.lz','.lzma','.cab','.ace','.arj'}
-MINECRAFT_EXTS  = {'.jar','.schem','.schematic','.litematic','.nbt', '.mcfunction'}
-NONMAC_EXTS     = {'.exe','.msi','.dll','.com','.bat','.cmd','.sys','.apk','.appimage','.scr','.deb','.rpm','.cab','.pkg'}
-DOCUMENT_EXTS   = {'.pdf','.doc','.docx','.ppt','.pptx','.xls','.xlsx','.pages','.key','.numbers','.odt','.ods','.odp'}
-CODE_EXTS       = {'.py','.js','.sh','.rb','.pl','.c','.cpp','.h','.java','.go','.rs','.ts','.jsx','.tsx','.php','.swift','.kt','.kts','.scala','.ps1','.cs','.dart','.r','.m','.lua','.html','.htm','.css','.scss','.less','.vue','.svelte','.sql'}
-DISK_EXTS       = {'.dmg','.iso','.img','.bin','.toast','.toast.gz','.toast.bz2','.toast.xz','.toast.tar','.toast.tar.gz','.toast.tar.bz2','.toast.tar.xz','.vhd','.vhdx','.vmdk','.qcow2'}
-REAPER_EXTS     = {'.rpp','.rpl','.rpreset','.rpp.gz','.rpp.bz2','.rpp.xz','.rpp.tar','.rpp.tar.gz','.rpp.tar.bz2','.rpp.tar.xz'}
-MUSICSCORE_EXTS = {'.mscz','.mscx','.mscx.gz','.mscx.bz2','.mscx.xz','.mscx.tar','.mscx.tar.gz','.mscx.tar.bz2','.mscx.tar.xz'}
-THREE_D_EXTS    = {'.stl','.obj','.fbx','.dae','.3ds','.ply','.glb','.gltf','.blend','.3mf','.igs','.iges','.stp','.step'}
-EBOOK_EXTS      = {'.epub','.mobi','.azw','.azw3','.fb2'}
-FONT_EXTS       = {'.ttf','.otf','.woff','.woff2','.fnt'}
+def load_config() -> Dict:
+    """Load configuration from JSON file or create default if not exists."""
+    try:
+        if CONFIG_FILE.exists():
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                print(f"Loaded configuration from {CONFIG_FILE}")
+                
+                # Check if this is an auto-generated config that needs updating
+                if config.get("metadata", {}).get("auto_generated", False):
+                    updated_config = update_config_with_defaults(config)
+                    if updated_config != config:
+                        save_config(updated_config)
+                        print("Updated configuration with new default categories")
+                        return updated_config
+                
+                return config
+        else:
+            # Create default config file
+            save_config(DEFAULT_CONFIG)
+            print(f"Created default configuration file: {CONFIG_FILE}")
+            return DEFAULT_CONFIG
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"Warning: Could not load configuration file: {e}")
+        print("Using default configuration")
+        return DEFAULT_CONFIG
+
+def save_config(config: Dict) -> None:
+    """Save configuration to JSON file with compact formatting."""
+    try:
+        with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+            # Custom JSON formatting to match example style
+            f.write('{\n')
+            
+            # Write metadata
+            f.write('  "metadata": {\n')
+            metadata = config.get("metadata", {})
+            metadata_items = []
+            for key, value in metadata.items():
+                if isinstance(value, str):
+                    metadata_items.append(f'    "{key}": "{value}"')
+                else:
+                    metadata_items.append(f'    "{key}": {str(value).lower()}')
+            f.write(',\n'.join(metadata_items))
+            f.write('\n  },\n')
+            
+            # Write categories
+            f.write('  "categories": {\n')
+            categories = config.get("categories", {})
+            category_items = []
+            
+            for category_name, category_data in categories.items():
+                extensions = category_data.get("extensions", [])
+                folder_name = category_data.get("folder_name", category_name)
+                
+                # Format extensions as a compact array
+                extensions_str = ', '.join([f'"{ext}"' for ext in extensions])
+                
+                category_str = f'    "{category_name}": {{\n      "extensions": [{extensions_str}],\n      "folder_name": "{folder_name}"\n    }}'
+                category_items.append(category_str)
+            
+            f.write(',\n'.join(category_items))
+            f.write('\n  }\n}')
+            
+    except OSError as e:
+        print(f"Warning: Could not save configuration file: {e}")
+
+def update_config_with_defaults(existing_config: Dict) -> Dict:
+    """Update existing config with new default categories while preserving user customizations."""
+    from datetime import datetime
+    
+    # Get existing categories
+    existing_categories = existing_config.get("categories", {})
+    default_categories = DEFAULT_CONFIG.get("categories", {})
+    
+    # Track changes
+    added_categories = []
+    updated_categories = []
+    
+    # Create new config starting with existing one
+    updated_config = existing_config.copy()
+    
+    # Update metadata
+    updated_config["metadata"] = {
+        "version": "1.0",
+        "auto_generated": True,
+        "last_updated": datetime.now().strftime("%Y-%m-%d"),
+        "last_auto_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "note": "This is the default configuration - set auto_generated to false to prevent automatic updates"
+    }
+    
+    # Merge categories
+    merged_categories = existing_categories.copy()
+    
+    for category_name, default_category in default_categories.items():
+        if category_name not in existing_categories:
+            # Add new default category
+            merged_categories[category_name] = default_category
+            added_categories.append(category_name)
+        else:
+            # Check if default category has new extensions
+            existing_extensions = set(existing_categories[category_name].get("extensions", []))
+            default_extensions = set(default_category.get("extensions", []))
+            
+            if default_extensions - existing_extensions:
+                # Add new extensions to existing category
+                merged_categories[category_name]["extensions"] = list(
+                    existing_extensions | default_extensions
+                )
+                updated_categories.append(category_name)
+    
+    updated_config["categories"] = merged_categories
+    
+    # Print summary of changes
+    if added_categories:
+        print(f"Added new categories: {', '.join(added_categories)}")
+    if updated_categories:
+        print(f"Updated categories with new extensions: {', '.join(updated_categories)}")
+    
+    return updated_config
+
+def get_extension_mapping(config: Dict) -> Dict[str, str]:
+    """Create a mapping from file extensions to category folder names."""
+    extension_map = {}
+    
+    for category_name, category_data in config.get("categories", {}).items():
+        folder_name = category_data.get("folder_name", category_name)
+        extensions = category_data.get("extensions", [])
+        
+        for ext in extensions:
+            extension_map[ext.lower()] = folder_name
+    
+    return extension_map
 
 def load_ignore_patterns() -> List[str]:
     """Load ignore patterns from .sortignore file."""
@@ -87,25 +281,10 @@ def should_ignore(name: str, patterns: List[str]) -> bool:
         # If pattern matching fails, don't ignore the file
         return False
 
-def categorize(ext: str) -> str:
-    """Categorize file based on extension."""
+def categorize(ext: str, extension_map: Dict[str, str]) -> str:
+    """Categorize file based on extension using the config mapping."""
     ext = ext.lower()
-    if ext in IMAGE_EXTS:      return 'Image'
-    if ext in AUDIO_EXTS:      return 'Audio'
-    if ext in VIDEO_EXTS:      return 'Video'
-    if ext in TEXT_EXTS:       return 'Text'
-    if ext in DOCUMENT_EXTS:   return 'Documents'
-    if ext in CODE_EXTS:       return 'Code'
-    if ext in ARCHIVE_EXTS:    return 'Compressed archive'
-    if ext in MINECRAFT_EXTS:  return 'Minecraft-related file'
-    if ext in NONMAC_EXTS:     return 'Non-mac file'
-    if ext in DISK_EXTS:       return 'Disk image'
-    if ext in REAPER_EXTS:     return 'Reaper project'
-    if ext in MUSICSCORE_EXTS: return 'Music score'
-    if ext in THREE_D_EXTS:    return '3D model'
-    if ext in EBOOK_EXTS:      return 'eBook'
-    if ext in FONT_EXTS:       return 'Fonts'
-    return 'Miscellaneous'
+    return extension_map.get(ext, 'Miscellaneous')
 
 def ensure_dir(path: Path) -> Path:
     """Create directory if it doesn't exist."""
@@ -183,6 +362,14 @@ def main():
         print(f"Error: {DESKTOP_DIR} is not a directory")
         sys.exit(1)
     
+    # Load configuration
+    config = load_config()
+    extension_map = get_extension_mapping(config)
+    
+    # Display loaded categories
+    categories = config.get("categories", {})
+    print(f"Loaded {len(categories)} categories from configuration")
+    
     # Load ignore patterns
     patterns = load_ignore_patterns()
     if patterns:
@@ -199,12 +386,14 @@ def main():
                 if not item.is_file() or should_ignore(item.name, patterns):
                     continue
                 
-                # Skip the script itself and the target directory
-                if item.name == 'autosort.py' or item == TARGET_ROOT:
+                # Skip the script itself, config file, and the target directory
+                if (item.name == 'autosort.py' or 
+                    item.name == 'autosort_config.json' or 
+                    item == TARGET_ROOT):
                     continue
                 
                 # Categorize and move
-                category = categorize(item.suffix)
+                category = categorize(item.suffix, extension_map)
                 cat_dir = ensure_dir(TARGET_ROOT / category)
                 dest = unique_path(cat_dir / item.name)
                 

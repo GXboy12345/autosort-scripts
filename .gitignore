@@ -147,3 +147,5 @@ $RECYCLE.BIN/
 # Project specific
 .sortignore
 Autosort/
+disk_scanner*
+autosort_config.json
