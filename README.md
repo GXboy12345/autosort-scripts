@@ -12,14 +12,16 @@ A Python script that automatically organizes files on your Desktop into categori
 
 ## Supported File Categories
 
-- **Images**: JPG, PNG, GIF, BMP, TIFF, HEIC, RAW, SVG, WebP, PSD, AI, EPS, ICO
-- **Audio**: MP3, WAV, FLAC, AAC, M4A, OGG, WMA, AIFF, ALAC
-- **Video**: MP4, MOV, AVI, MKV, FLV, WMV, WebM, M4V, 3GP, MPEG, MPG
-- **Documents**: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, Pages, Key, Numbers
-- **Code**: Python, JavaScript, Shell, Ruby, Perl, C/C++, Java, Go, Rust, TypeScript, PHP, Swift, Kotlin, Scala, PowerShell
-- **Text**: TXT, MD, RTF, LOG, CSV, TEX, JSON, XML, YAML, INI, CFG, CONF
-- **Archives**: ZIP, RAR, 7Z, TAR, GZ, BZ2, XZ
-- **Special Categories**: Minecraft files, Non-Mac files, Disk images, Reaper projects, Music scores, 3D models
+- **Images**: JPG, JPEG 2000 (JP2, J2K, JPF, JPX), PNG, GIF, BMP, TIFF/TIF, HEIC, RAW/CR2/NEF/ARW/ORF/DNG, SVG, WebP, AVIF, JXL, PSD, AI, EPS, ICO, ICNS, TGA, WebP
+- **Audio**: MP3, WAV, FLAC, AAC, M4A, OGG, OPUS, AMR, WMA, AIFF, ALAC, MIDI/MID, WV, RA, APE, DTS
+- **Video**: MP4, MOV, AVI, MKV, FLV, WMV, WebM, M4V, 3GP, MPEG/MPG, TS, M2TS, MTS, DIVX, OGV, VOB, RM, ASF, MXF, H264, HEVC/H265
+- **Documents**: PDF, DOC/DOCX, PPT/PPTX, XLS/XLSX, ODT, ODS, ODP, Pages, Key, Numbers
+- **Code**: Python (.py), JavaScript/TypeScript (.js/.ts/.jsx/.tsx), Shell (.sh), Ruby (.rb), Perl (.pl), C/C++ (.c/.cpp/.h), C# (.cs), Java (.java), Go (.go), Rust (.rs), PHP (.php), Swift (.swift), Kotlin (.kt), Scala (.scala), Dart (.dart), R (.r), Objective-C (.m), Lua (.lua), HTML (.html/.htm), CSS/SCSS/LESS (.css/.scss/.less), Vue (.vue), Svelte (.svelte), SQL (.sql), PowerShell (.ps1)
+- **Text**: TXT, Markdown (.md/.markdown), RTF, LOG, CSV, TEX, JSON, XML, YAML/YML, INI, CFG, CONF, TOML, AsciiDoc (.adoc/.asciidoc), reStructuredText (.rst), PROPERTIES
+- **Archives**: ZIP, RAR, 7Z, TAR, TGZ, TAR.GZ, TAR.BZ2, TAR.XZ, GZ, BZ2, XZ, ZST/ZSTD, LZ, LZMA, CAB, ACE, ARJ
+- **eBooks**: EPUB, MOBI, AZW, AZW3, FB2
+- **Fonts**: TTF, OTF, WOFF, WOFF2, FNT
+- **Special Categories**: Minecraft files, Non-Mac/Windows executables (EXE, MSI, DLL, COM, BAT, CMD, SYS, SCR, APK, DEB, RPM, PKG), Disk images (DMG, ISO, IMG, VHD/VHDX, VMDK, QCOW2, BIN, TOAST), Reaper projects, Music scores, 3D models
 
 ## Installation
 

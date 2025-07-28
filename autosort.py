@@ -46,19 +46,22 @@ DESKTOP_DIR  = get_desktop_path()
 TARGET_ROOT  = DESKTOP_DIR / 'Autosort'
 
 # Extension sets
-IMAGE_EXTS      = {'.jpg','.jpeg','.png','.gif','.bmp','.tiff','.tif','.heic','.raw','.svg','.webp','.psd','.ai','.eps','.ico'}
-AUDIO_EXTS      = {'.mp3','.wav','.flac','.aac','.m4a','.ogg','.wma','.aiff','.alac'}
-VIDEO_EXTS      = {'.mp4','.mov','.avi','.mkv','.flv','.wmv','.webm','.m4v','.3gp','.mpeg','.mpg'}
-TEXT_EXTS       = {'.txt','.md','.rtf','.log','.csv','.tex','.json','.xml','.yaml','.yml','.ini','.cfg','.conf'}
-ARCHIVE_EXTS    = {'.zip','.rar','.7z','.tar','.gz','.bz2','.xz','.tgz','.tar.gz','.tar.bz2','.tar.xz'}
+IMAGE_EXTS      = {'.jpg','.jpeg','.png','.gif','.bmp','.tiff','.tif','.heic','.raw','.svg','.webp','.psd','.ai','.eps','.ico',
+                    '.avif','.jxl','.jp2','.j2k','.jpf','.jpx','.tga','.dng','.cr2','.nef','.orf','.arw','.icns'}
+AUDIO_EXTS      = {'.mp3','.wav','.flac','.aac','.m4a','.ogg','.wma','.aiff','.alac','.opus','.amr','.mid','.midi','.wv','.ra','.ape','.dts'}
+VIDEO_EXTS      = {'.mp4','.mov','.avi','.mkv','.flv','.wmv','.webm','.m4v','.3gp','.mpeg','.mpg','.ts','.m2ts','.mts','.m2v','.divx','.ogv','.h264','.h265','.hevc','.vob','.rm','.asf','.mxf'}
+TEXT_EXTS       = {'.txt','.md','.rtf','.log','.csv','.tex','.json','.xml','.yaml','.yml','.ini','.cfg','.conf','.toml','.adoc','.asciidoc','.rst','.properties'}
+ARCHIVE_EXTS    = {'.zip','.rar','.7z','.tar','.gz','.bz2','.xz','.tgz','.tar.gz','.tar.bz2','.tar.xz','.zst','.zstd','.lz','.lzma','.cab','.ace','.arj'}
 MINECRAFT_EXTS  = {'.jar','.schem','.schematic','.litematic','.nbt', '.mcfunction'}
-NONMAC_EXTS     = {'.exe','.msi','.dll','.com','.bat','.cmd','.sys','.apk','.appimage'}
-DOCUMENT_EXTS   = {'.pdf','.doc','.docx','.ppt','.pptx','.xls','.xlsx','.pages','.key','.numbers'}
-CODE_EXTS       = {'.py','.js','.sh','.rb','.pl','.c','.cpp','.h','.java','.go','.rs','.ts','.jsx','.tsx','.php','.swift','.kt','.kts','.scala','.ps1'}
-DISK_EXTS       = {'.dmg','.iso','.img','.bin','.toast','.toast.gz','.toast.bz2','.toast.xz','.toast.tar','.toast.tar.gz','.toast.tar.bz2','.toast.tar.xz'}
+NONMAC_EXTS     = {'.exe','.msi','.dll','.com','.bat','.cmd','.sys','.apk','.appimage','.scr','.deb','.rpm','.cab','.pkg'}
+DOCUMENT_EXTS   = {'.pdf','.doc','.docx','.ppt','.pptx','.xls','.xlsx','.pages','.key','.numbers','.odt','.ods','.odp'}
+CODE_EXTS       = {'.py','.js','.sh','.rb','.pl','.c','.cpp','.h','.java','.go','.rs','.ts','.jsx','.tsx','.php','.swift','.kt','.kts','.scala','.ps1','.cs','.dart','.r','.m','.lua','.html','.htm','.css','.scss','.less','.vue','.svelte','.sql'}
+DISK_EXTS       = {'.dmg','.iso','.img','.bin','.toast','.toast.gz','.toast.bz2','.toast.xz','.toast.tar','.toast.tar.gz','.toast.tar.bz2','.toast.tar.xz','.vhd','.vhdx','.vmdk','.qcow2'}
 REAPER_EXTS     = {'.rpp','.rpl','.rpreset','.rpp.gz','.rpp.bz2','.rpp.xz','.rpp.tar','.rpp.tar.gz','.rpp.tar.bz2','.rpp.tar.xz'}
 MUSICSCORE_EXTS = {'.mscz','.mscx','.mscx.gz','.mscx.bz2','.mscx.xz','.mscx.tar','.mscx.tar.gz','.mscx.tar.bz2','.mscx.tar.xz'}
-THREE_D_EXTS    = {'.stl','.obj','.fbx','.dae','.3ds','.ply','.glb','.gltf','.dae','.3ds','.ply','.glb','.gltf'}
+THREE_D_EXTS    = {'.stl','.obj','.fbx','.dae','.3ds','.ply','.glb','.gltf','.blend','.3mf','.igs','.iges','.stp','.step'}
+EBOOK_EXTS      = {'.epub','.mobi','.azw','.azw3','.fb2'}
+FONT_EXTS       = {'.ttf','.otf','.woff','.woff2','.fnt'}
 
 def load_ignore_patterns() -> List[str]:
     """Load ignore patterns from .sortignore file."""
@@ -100,6 +103,8 @@ def categorize(ext: str) -> str:
     if ext in REAPER_EXTS:     return 'Reaper project'
     if ext in MUSICSCORE_EXTS: return 'Music score'
     if ext in THREE_D_EXTS:    return '3D model'
+    if ext in EBOOK_EXTS:      return 'eBook'
+    if ext in FONT_EXTS:       return 'Fonts'
     return 'Miscellaneous'
 
 def ensure_dir(path: Path) -> Path:
