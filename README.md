@@ -108,7 +108,9 @@ You can modify the extension sets in the script to add or remove file types from
 
 ## License
 
-This project is open source. Feel free to modify and distribute as needed.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+The MIT License is a permissive license that allows others to use, modify, and distribute your code with very few restrictions. It's one of the most popular open source licenses due to its simplicity and permissiveness.
 
 ## Contributing
 
