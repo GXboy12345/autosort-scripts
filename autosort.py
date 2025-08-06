@@ -28,7 +28,7 @@ CONFIG_FILE  = SCRIPT_DIR / 'autosort_config.json'
 # Default configuration
 DEFAULT_CONFIG = {
     "metadata": {
-        "version": "1.0",
+        "version": "1.1",
         "auto_generated": True,
         "last_updated": "2024-01-01",
         "note": "This is the default configuration - set auto_generated to false to prevent automatic updates"
@@ -94,6 +94,10 @@ DEFAULT_CONFIG = {
             "extensions": [".ttf", ".otf", ".woff", ".woff2", ".fnt"],
             "folder_name": "Fonts"
         },
+        "Contact files": {
+            "extensions": [".vcf", ".vcard"],
+            "folder_name": "Contact files"
+        },
         "Miscellaneous": {
             "extensions": [],
             "folder_name": "Miscellaneous"
@@ -123,6 +127,21 @@ def get_desktop_path() -> Path:
 DESKTOP_DIR  = get_desktop_path()
 TARGET_ROOT  = DESKTOP_DIR / 'Autosort'
 
+def is_version_newer(default_version: str, config_version: str) -> bool:
+    """Return True if default_version is newer than config_version (simple dot-separated comparison)."""
+    from itertools import zip_longest
+    def parse(v: str):
+        return [int(part) for part in v.split('.') if part.isdigit()]
+    dv = parse(default_version)
+    cv = parse(config_version)
+    for d, c in zip_longest(dv, cv, fillvalue=0):
+        if d > c:
+            return True
+        if d < c:
+            return False
+    return False
+
+
 def load_config() -> Dict:
     """Load configuration from JSON file or create default if not exists."""
     try:
@@ -131,12 +150,16 @@ def load_config() -> Dict:
                 config = json.load(f)
                 print(f"Loaded configuration from {CONFIG_FILE}")
                 
-                # Check if this is an auto-generated config that needs updating
-                if config.get("metadata", {}).get("auto_generated", False):
+                # Check version and auto-generated flag
+                auto_generated = config.get("metadata", {}).get("auto_generated", False)
+                default_version = DEFAULT_CONFIG.get("metadata", {}).get("version", "0")
+                config_version = str(config.get("metadata", {}).get("version", "0"))
+
+                if auto_generated and is_version_newer(default_version, config_version):
                     updated_config = update_config_with_defaults(config)
                     if updated_config != config:
                         save_config(updated_config)
-                        print("Updated configuration with new default categories")
+                        print(f"Auto-generated config updated from version {config_version} to {default_version} with new default categories")
                         return updated_config
                 
                 return config
@@ -207,7 +230,7 @@ def update_config_with_defaults(existing_config: Dict) -> Dict:
     
     # Update metadata
     updated_config["metadata"] = {
-        "version": "1.0",
+        "version": DEFAULT_CONFIG.get("metadata", {}).get("version", "1.0"),
         "auto_generated": True,
         "last_updated": datetime.now().strftime("%Y-%m-%d"),
         "last_auto_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
