@@ -30,7 +30,7 @@ DEFAULT_CONFIG = {
     "metadata": {
         "version": "1.1",
         "auto_generated": True,
-        "last_updated": "2024-01-01",
+        "last_updated": "2024-08-06",
         "note": "This is the default configuration - set auto_generated to false to prevent automatic updates"
     },
     "categories": {
