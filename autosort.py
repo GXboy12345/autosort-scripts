@@ -28,9 +28,9 @@ CONFIG_FILE  = SCRIPT_DIR / 'autosort_config.json'
 # Default configuration
 DEFAULT_CONFIG = {
     "metadata": {
-        "version": "1.1",
+        "version": "1.11",
         "auto_generated": True,
-        "last_updated": "2024-08-06",
+        "last_updated": "2025-08-06",
         "note": "This is the default configuration - set auto_generated to false to prevent automatic updates"
     },
     "categories": {
@@ -51,7 +51,7 @@ DEFAULT_CONFIG = {
             "folder_name": "Text"
         },
         "Documents": {
-            "extensions": [".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".pages", ".key", ".numbers", ".odt", ".ods", ".odp"],
+            "extensions": [".pdf", ".doc", ".docx", ".pages", ".odt"],
             "folder_name": "Documents"
         },
         "Code": {
@@ -67,7 +67,7 @@ DEFAULT_CONFIG = {
             "folder_name": "Minecraft"
         },
         "NonMac": {
-            "extensions": [".exe", ".msi", ".dll", ".com", ".bat", ".cmd", ".sys", ".apk", ".appimage", ".scr", ".deb", ".rpm", ".cab", ".pkg"],
+            "extensions": [".exe", ".msi", ".dll", ".com", ".bat", ".cmd", ".sys", ".appimage", ".scr", ".rpm", ".cab", ".pkg"],
             "folder_name": "Non-Mac Files"
         },
         "DiskImages": {
@@ -97,6 +97,45 @@ DEFAULT_CONFIG = {
         "Contact files": {
             "extensions": [".vcf", ".vcard"],
             "folder_name": "Contact files"
+        },
+        "Databases": {
+            "extensions": [".db", ".sqlite", ".sql", ".mdb", ".accdb", ".odb", ".dbf"],
+            "folder_name": "Databases"
+        },
+        "Certificates": {
+            "extensions": [".pem", ".cer", ".crt", ".pfx", ".p12", ".der", ".csr", ".key", ".p7b", ".p7c"],
+            "folder_name": "Certificates"
+        },
+        "GIS": {
+            "extensions": [".shp", ".kml", ".kmz", ".gpx", ".geojson", ".gml", ".tif", ".tiff", ".img", ".asc"],
+            "folder_name": "GIS"
+        },
+        "VideoProjects": {
+            "extensions": [".prproj", ".veg", ".drp", ".fcpxml", ".aep"],
+            "folder_name": "Video Projects"
+        },
+        "AudioProjects": {
+            "extensions": [".flp", ".als", ".aup", ".aup3", ".sesx", ".ptx", ".rpp"],
+            "folder_name": "Audio Projects"
+        },
+        "Spreadsheets": {
+            "extensions": [".xls", ".xlsx", ".xlsm", ".csv", ".tsv"],
+            "folder_name": "Spreadsheets"
+        },
+        "Presentations": {
+            "extensions": [".ppt", ".pptx", ".pps", ".ppsx"],
+            "folder_name": "Presentations"
+        },
+        "Torrents": {
+            "extensions": [".torrent"],
+            "folder_name": "Torrents"
+        },
+        "Sideloading": {
+            "extensions": [".ipa", ".dylib", ".xapk", ".xapk.xz", ".xapk.bz2", ".xapk.tar", ".xapk.tar.gz", ".xapk.tar.bz2", ".xapk.tar.xz", ".mobileprovision", ".mobileconfig", ".mobileconfig.xml", ".mobileconfig.xml.gz", ".mobileconfig.xml.bz2", ".mobileconfig.xml.xz", ".mobileconfig.xml.tar", ".mobileconfig.xml.tar.gz", ".mobileconfig.xml.tar.bz2", ".mobileconfig.xml.tar.xz"],
+            "folder_name": "Sideloading"
+        },
+        "Subtitles": {
+            "extensions": [".srt", ".sub", ".idx", ".subrip", ".subrip.gz", ".subrip.bz2", ".subrip.xz", ".subrip.tar", ".subrip.tar.gz", ".subrip.tar.bz2", ".subrip.tar.xz", ".srt.gz", ".srt.bz2", ".srt.xz", ".srt.tar", ".srt.tar.gz", ".srt.tar.bz2", ".srt.tar.xz", ".ytp", ".aegisub", ".ssa", ".ass", ".vtt", ".ttml", ".ttml.gz", ".ttml.bz2", ".ttml.xz", ".ttml.tar", ".ttml.tar.gz", ".ttml.tar.bz2", ".ttml.tar.xz"],
         },
         "Miscellaneous": {
             "extensions": [],
