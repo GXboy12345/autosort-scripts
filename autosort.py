@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-AutoSort - Desktop file organizer
+AutoSort - File organizer
 
-This script automatically organizes files on your Desktop into categorized folders.
+This script automatically organizes files into categorized folders.
 
 Requirements:
 - Python 3.6+
-- macOS (for Desktop path detection)
+- macOS (for Desktop path detection and folder dialog)
 
 Copyright (c) 2024 Gboy
 Licensed under the MIT License - see LICENSE file for details.
@@ -163,8 +163,88 @@ def get_desktop_path() -> Path:
     # If none found, return the standard Desktop path
     return Path.home() / 'Desktop'
 
-DESKTOP_DIR  = get_desktop_path()
-TARGET_ROOT  = DESKTOP_DIR / 'Autosort'
+def select_folder_dialog() -> Path:
+    """Open a folder selection dialog and return the selected path."""
+    try:
+        import subprocess
+        
+        # Use AppleScript to open folder selection dialog
+        script = '''
+        tell application "System Events"
+            activate
+            set folderPath to choose folder with prompt "Select folder to organize:"
+            return POSIX path of folderPath
+        end tell
+        '''
+        
+        result = subprocess.run(['osascript', '-e', script], 
+                              capture_output=True, text=True, timeout=30)
+        
+        if result.returncode == 0 and result.stdout.strip():
+            selected_path = Path(result.stdout.strip())
+            if selected_path.exists() and selected_path.is_dir():
+                return selected_path
+            else:
+                print(f"Error: Selected path {selected_path} is not a valid directory")
+                return None
+        else:
+            print("Folder selection was cancelled or failed")
+            return None
+            
+    except subprocess.TimeoutExpired:
+        print("Folder selection dialog timed out")
+        return None
+    except Exception as e:
+        print(f"Error opening folder dialog: {e}")
+        return None
+
+def get_source_directory() -> tuple[Path, Path]:
+    """Get the source directory and target root based on user choice."""
+    desktop_path = get_desktop_path()
+    
+    print("AutoSort - File Organizer")
+    print("=" * 40)
+    print(f"1. Organize Desktop ({desktop_path})")
+    print("2. Select custom folder")
+    print("3. Exit")
+    print()
+    
+    while True:
+        try:
+            choice = input("Enter your choice (1-3): ").strip()
+            
+            if choice == "1":
+                source_dir = desktop_path
+                target_root = source_dir / 'Autosort'
+                print(f"Selected: Desktop ({source_dir})")
+                return source_dir, target_root
+                
+            elif choice == "2":
+                print("Opening folder selection dialog...")
+                selected_path = select_folder_dialog()
+                
+                if selected_path:
+                    source_dir = selected_path
+                    target_root = source_dir / 'Autosort'
+                    print(f"Selected: {source_dir}")
+                    return source_dir, target_root
+                else:
+                    print("Please try again or select option 3 to exit.")
+                    continue
+                    
+            elif choice == "3":
+                print("Goodbye!")
+                sys.exit(0)
+                
+            else:
+                print("Invalid choice. Please enter 1, 2, or 3.")
+                
+        except KeyboardInterrupt:
+            print("\nGoodbye!")
+            sys.exit(0)
+        except Exception as e:
+            print(f"Error: {e}")
+            print("Please try again.")
 
 def is_version_newer(default_version: str, config_version: str) -> bool:
     """Return True if default_version is newer than config_version (simple dot-separated comparison)."""
@@ -412,16 +492,19 @@ def safe_move_file(source: Path, dest: Path) -> bool:
 
 def main():
     """Main function with improved error handling."""
-    print(f"Desktop directory: {DESKTOP_DIR}")
-    print(f"Target root: {TARGET_ROOT}")
+    # Get source directory and target root from user
+    source_dir, target_root = get_source_directory()
     
-    # Check if Desktop directory exists
-    if not DESKTOP_DIR.exists():
-        print(f"Error: Desktop directory {DESKTOP_DIR} does not exist")
+    print(f"Source directory: {source_dir}")
+    print(f"Target root: {target_root}")
+    
+    # Check if source directory exists
+    if not source_dir.exists():
+        print(f"Error: Source directory {source_dir} does not exist")
         sys.exit(1)
     
-    if not DESKTOP_DIR.is_dir():
-        print(f"Error: {DESKTOP_DIR} is not a directory")
+    if not source_dir.is_dir():
+        print(f"Error: {source_dir} is not a directory")
         sys.exit(1)
     
     # Load configuration
@@ -442,7 +525,7 @@ def main():
     error_count = 0
     
     try:
-        for item in DESKTOP_DIR.iterdir():
+        for item in source_dir.iterdir():
             try:
                 # Skip if not a file or should be ignored
                 if not item.is_file() or should_ignore(item.name, patterns):
@@ -451,12 +534,12 @@ def main():
                 # Skip the script itself, config file, and the target directory
                 if (item.name == 'autosort.py' or 
                     item.name == 'autosort_config.json' or 
-                    item == TARGET_ROOT):
+                    item == target_root):
                     continue
                 
                 # Categorize and move
                 category = categorize(item.suffix, extension_map)
-                cat_dir = ensure_dir(TARGET_ROOT / category)
+                cat_dir = ensure_dir(target_root / category)
                 dest = unique_path(cat_dir / item.name)
                 
                 if safe_move_file(item, dest):
@@ -470,7 +553,7 @@ def main():
                 error_count += 1
                 
     except Exception as e:
-        print(f"Error iterating through Desktop directory: {e}")
+        print(f"Error iterating through source directory: {e}")
         sys.exit(1)
     
     # Summary

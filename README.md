@@ -1,9 +1,10 @@
-# AutoSort - Desktop File Organizer
+# AutoSort - File Organizer
 
-A Python script that automatically organizes files on your Desktop into categorized folders.
+A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
 ## Features
 
+- **Flexible Source Selection**: Choose between organizing your Desktop or any custom folder
 - **Automatic Categorization**: Files are sorted into categories based on their file extensions
 - **Configurable Categories**: Customize categories, file types, and folder names via JSON configuration
 - **Cross-platform Desktop Detection**: Works with different locale Desktop folder names (Desktop, Escritorio, Bureau, etc.)
@@ -36,6 +37,11 @@ A Python script that automatically organizes files on your Desktop into categori
 ```bash
 python3 autosort.py
 ```
+
+The script will prompt you to choose:
+1. **Organize Desktop** - Sort files from your Desktop folder
+2. **Select custom folder** - Choose any folder to organize using a folder selection dialog
+3. **Exit** - Quit the script
 
 ### macOS Double-Click
 Double-click the `run-autosort.command` file to execute the script.
@@ -162,13 +168,14 @@ backup_*
 
 ## How It Works
 
-1. The script detects your Desktop directory (supports multiple locales)
-2. Loads the configuration from `autosort_config.json` (creates default if not exists)
-3. Creates an `Autosort` folder on your Desktop
-4. Scans all files on your Desktop (excluding those in `.sortignore`)
-5. Categorizes each file based on its extension using the configuration
-6. Moves files to appropriate subfolders within `Autosort`
-7. Handles naming conflicts by appending numbers or timestamps
+1. The script prompts you to choose between Desktop organization or custom folder selection
+2. If you choose custom folder, a folder selection dialog opens to let you pick any directory
+3. Loads the configuration from `autosort_config.json` (creates default if not exists)
+4. Creates an `Autosort` folder in the selected directory
+5. Scans all files in the selected directory (excluding those in `.sortignore`)
+6. Categorizes each file based on its extension using the configuration
+7. Moves files to appropriate subfolders within `Autosort`
+8. Handles naming conflicts by appending numbers or timestamps
 
 ## Safety Features
 
@@ -180,8 +187,8 @@ backup_*
 ## Requirements
 
 - Python 3.6+
-- macOS (for Desktop path detection)
-- Read/write permissions on Desktop directory
+- macOS (for Desktop path detection and folder selection dialog)
+- Read/write permissions on the directory you want to organize
 
 ## License
 
