@@ -123,7 +123,7 @@ Each category has:
   "metadata": {
     "version": "1.12",
     "auto_generated": false,
-    "last_updated": "2025-08-06",
+    "last_updated": "2025-08-09",
     "note": "This is a custom configuration example"
   },
   "categories": {
