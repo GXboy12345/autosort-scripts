@@ -28,9 +28,9 @@ CONFIG_FILE  = SCRIPT_DIR / 'autosort_config.json'
 # Default configuration
 DEFAULT_CONFIG = {
     "metadata": {
-        "version": "1.11",
+        "version": "1.12",
         "auto_generated": True,
-        "last_updated": "2025-08-06",
+        "last_updated": "2025-08-09",
         "note": "This is the default configuration - set auto_generated to false to prevent automatic updates"
     },
     "categories": {
@@ -74,10 +74,7 @@ DEFAULT_CONFIG = {
             "extensions": [".dmg", ".iso", ".img", ".bin", ".toast", ".toast.gz", ".toast.bz2", ".toast.xz", ".toast.tar", ".toast.tar.gz", ".toast.tar.bz2", ".toast.tar.xz", ".vhd", ".vhdx", ".vmdk", ".qcow2"],
             "folder_name": "Disk Images"
         },
-        "Reaper": {
-            "extensions": [".rpp", ".rpl", ".rpreset", ".rpp.gz", ".rpp.bz2", ".rpp.xz", ".rpp.tar", ".rpp.tar.gz", ".rpp.tar.bz2", ".rpp.tar.xz"],
-            "folder_name": "Reaper Projects"
-        },
+
         "MusicScores": {
             "extensions": [".mscz", ".mscx", ".mscx.gz", ".mscx.bz2", ".mscx.xz", ".mscx.tar", ".mscx.tar.gz", ".mscx.tar.bz2", ".mscx.tar.xz"],
             "folder_name": "Music Scores"
@@ -115,7 +112,7 @@ DEFAULT_CONFIG = {
             "folder_name": "Video Projects"
         },
         "AudioProjects": {
-            "extensions": [".flp", ".als", ".aup", ".aup3", ".sesx", ".ptx", ".rpp"],
+            "extensions": [".flp", ".als", ".aup", ".aup3", ".sesx", ".ptx", ".rpp", ".rpl", ".rpreset", ".rpp.gz", ".rpp.bz2", ".rpp.xz", ".rpp.tar", ".rpp.tar.gz", ".rpp.tar.bz2", ".rpp.tar.xz"],
             "folder_name": "Audio Projects"
         },
         "Spreadsheets": {

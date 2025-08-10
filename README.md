@@ -2,7 +2,12 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
-**Current Version**: 1.11 (August 2025)
+**Current Version**: 1.12 (August 2025)
+
+## What's New in v1.12
+
+- **Consolidated Audio Projects**: Merged Reaper files into the AudioProjects category for better organization
+- **Enhanced Audio Project Support**: Comprehensive coverage for FL Studio, Ableton Live, Audacity, Pro Tools, and Reaper
 
 ## What's New in v1.11
 
@@ -48,9 +53,8 @@ The script supports **25+ categories** with comprehensive file type coverage:
 ### Creative & Professional
 - **3DModels**: STL, OBJ, FBX, DAE, 3DS, PLY, GLB, GLTF, BLEND, 3MF, IGS/IGES, STP/STEP
 - **VideoProjects**: Adobe Premiere (.prproj), Vegas (.veg), DaVinci Resolve (.drp), Final Cut Pro (.fcpxml), After Effects (.aep)
-- **AudioProjects**: FL Studio (.flp), Ableton Live (.als), Audacity (.aup/.aup3), Pro Tools (.sesx/.ptx), Reaper (.rpp)
+- **AudioProjects**: FL Studio (.flp), Ableton Live (.als), Audacity (.aup/.aup3), Pro Tools (.sesx/.ptx), Reaper (.rpp/.rpl/.rpreset)
 - **MusicScores**: MuseScore (.mscz/.mscx)
-- **Reaper**: Reaper project files (.rpp/.rpl/.rpreset)
 
 ### Specialized Categories
 - **Minecraft**: JAR, SCHEM/SCHEMATIC, LITEMATIC, NBT, MCFUNCTION
@@ -117,7 +121,7 @@ Each category has:
 ```json
 {
   "metadata": {
-    "version": "1.11",
+    "version": "1.12",
     "auto_generated": false,
     "last_updated": "2025-08-06",
     "note": "This is a custom configuration example"
