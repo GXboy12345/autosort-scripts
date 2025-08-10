@@ -490,8 +490,55 @@ def safe_move_file(source: Path, dest: Path) -> bool:
         print(f"Unexpected error moving {source} to {dest}: {e}")
         return False
 
+def check_dependencies():
+    """Check if all required dependencies are available."""
+    required_modules = {
+        'fnmatch': 'File name pattern matching',
+        'shutil': 'High-level file operations',
+        'os': 'Operating system interface',
+        'sys': 'System-specific parameters',
+        'json': 'JSON encoder/decoder',
+        'pathlib': 'Object-oriented filesystem paths',
+        'typing': 'Type hints support',
+        'subprocess': 'Subprocess management',
+        'time': 'Time access and conversions',
+        'datetime': 'Date and time types',
+        'itertools': 'Iterator functions'
+    }
+    
+    missing_modules = []
+    
+    for module, description in required_modules.items():
+        try:
+            if module == 'pathlib':
+                import pathlib
+            elif module == 'typing':
+                import typing
+            elif module == 'datetime':
+                import datetime
+            elif module == 'itertools':
+                import itertools
+            else:
+                __import__(module)
+        except ImportError as e:
+            missing_modules.append(f"{module} ({description}): {e}")
+    
+    if missing_modules:
+        print("Error: Missing required dependencies:")
+        for module in missing_modules:
+            print(f"  - {module}")
+        print("\nThese are standard library modules that should be available with Python 3.6+.")
+        print("Please ensure you have a complete Python installation.")
+        return False
+    
+    return True
+
 def main():
     """Main function with improved error handling."""
+    # Check dependencies first
+    if not check_dependencies():
+        sys.exit(1)
+    
     # Get source directory and target root from user
     source_dir, target_root = get_source_directory()
     

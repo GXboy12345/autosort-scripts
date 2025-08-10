@@ -2,6 +2,16 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
+**Current Version**: 1.11 (August 2025)
+
+## What's New in v1.11
+
+- **Flexible Source Selection**: Choose between Desktop or any custom folder via native folder picker
+- **25+ Comprehensive Categories**: Added specialized categories for creative professionals, developers, and power users
+- **Enhanced File Type Support**: Extended coverage for video projects, audio projects, 3D models, GIS data, and more
+- **Improved Organization**: Separated documents into specific categories (Spreadsheets, Presentations, etc.)
+- **Better Configuration Management**: Enhanced auto-update system with version tracking
+
 ## Features
 
 - **Flexible Source Selection**: Choose between organizing your Desktop or any custom folder
@@ -14,16 +24,45 @@ A Python script that automatically organizes files into categorized folders. Can
 
 ## Supported File Categories
 
-- **Images**: JPG, JPEG 2000 (JP2, J2K, JPF, JPX), PNG, GIF, BMP, TIFF/TIF, HEIC, RAW/CR2/NEF/ARW/ORF/DNG, SVG, WebP, AVIF, JXL, PSD, AI, EPS, ICO, ICNS, TGA, WebP
+The script supports **25+ categories** with comprehensive file type coverage:
+
+### Core Media Categories
+- **Images**: JPG, JPEG 2000 (JP2, J2K, JPF, JPX), PNG, GIF, BMP, TIFF/TIF, HEIC, RAW formats (CR2, NEF, ARW, ORF, DNG), SVG, WebP, AVIF, JXL, PSD, AI, EPS, ICO, ICNS, TGA
 - **Audio**: MP3, WAV, FLAC, AAC, M4A, OGG, OPUS, AMR, WMA, AIFF, ALAC, MIDI/MID, WV, RA, APE, DTS
 - **Video**: MP4, MOV, AVI, MKV, FLV, WMV, WebM, M4V, 3GP, MPEG/MPG, TS, M2TS, MTS, DIVX, OGV, VOB, RM, ASF, MXF, H264, HEVC/H265
-- **Documents**: PDF, DOC/DOCX, PPT/PPTX, XLS/XLSX, ODT, ODS, ODP, Pages, Key, Numbers
+
+### Document Categories
+- **Documents**: PDF, DOC/DOCX, Pages, ODT
+- **Spreadsheets**: XLS/XLSX/XLSM, CSV, TSV
+- **Presentations**: PPT/PPTX, PPS/PPSX
+- **Text**: TXT, Markdown (.md), RTF, LOG, CSV, TEX, JSON, XML, YAML/YML, INI, CFG, CONF, TOML, AsciiDoc (.adoc/.asciidoc), reStructuredText (.rst), PROPERTIES
+
+### Development & Code
 - **Code**: Python (.py), JavaScript/TypeScript (.js/.ts/.jsx/.tsx), Shell (.sh), Ruby (.rb), Perl (.pl), C/C++ (.c/.cpp/.h), C# (.cs), Java (.java), Go (.go), Rust (.rs), PHP (.php), Swift (.swift), Kotlin (.kt), Scala (.scala), Dart (.dart), R (.r), Objective-C (.m), Lua (.lua), HTML (.html/.htm), CSS/SCSS/LESS (.css/.scss/.less), Vue (.vue), Svelte (.svelte), SQL (.sql), PowerShell (.ps1)
-- **Text**: TXT, Markdown (.md/.markdown), RTF, LOG, CSV, TEX, JSON, XML, YAML/YML, INI, CFG, CONF, TOML, AsciiDoc (.adoc/.asciidoc), reStructuredText (.rst), PROPERTIES
+
+### Archives & System Files
 - **Archives**: ZIP, RAR, 7Z, TAR, TGZ, TAR.GZ, TAR.BZ2, TAR.XZ, GZ, BZ2, XZ, ZST/ZSTD, LZ, LZMA, CAB, ACE, ARJ
+- **NonMac**: Windows executables (EXE, MSI, DLL, COM, BAT, CMD, SYS, SCR), Linux packages (RPM, PKG), AppImage
+- **DiskImages**: DMG, ISO, IMG, BIN, TOAST, VHD/VHDX, VMDK, QCOW2
+
+### Creative & Professional
+- **3DModels**: STL, OBJ, FBX, DAE, 3DS, PLY, GLB, GLTF, BLEND, 3MF, IGS/IGES, STP/STEP
+- **VideoProjects**: Adobe Premiere (.prproj), Vegas (.veg), DaVinci Resolve (.drp), Final Cut Pro (.fcpxml), After Effects (.aep)
+- **AudioProjects**: FL Studio (.flp), Ableton Live (.als), Audacity (.aup/.aup3), Pro Tools (.sesx/.ptx), Reaper (.rpp)
+- **MusicScores**: MuseScore (.mscz/.mscx)
+- **Reaper**: Reaper project files (.rpp/.rpl/.rpreset)
+
+### Specialized Categories
+- **Minecraft**: JAR, SCHEM/SCHEMATIC, LITEMATIC, NBT, MCFUNCTION
 - **eBooks**: EPUB, MOBI, AZW, AZW3, FB2
 - **Fonts**: TTF, OTF, WOFF, WOFF2, FNT
-- **Special Categories**: Minecraft files, Non-Mac/Windows executables (EXE, MSI, DLL, COM, BAT, CMD, SYS, SCR, APK, DEB, RPM, PKG), Disk images (DMG, ISO, IMG, VHD/VHDX, VMDK, QCOW2, BIN, TOAST), Reaper projects, Music scores, 3D models
+- **Contact files**: VCF, VCARD
+- **Databases**: DB, SQLITE, SQL, MDB, ACCDB, ODB, DBF
+- **Certificates**: PEM, CER, CRT, PFX, P12, DER, CSR, KEY, P7B, P7C
+- **GIS**: SHP, KML, KMZ, GPX, GEOJSON, GML, TIF/TIFF, IMG, ASC
+- **Torrents**: TORRENT
+- **Sideloading**: IPA, DYLIB, XAPK, mobile provisioning files
+- **Subtitles**: SRT, SUB, IDX, SUBRIP, YTP, AEGISUB, SSA, ASS, VTT, TTML
 
 ## Installation
 
@@ -42,6 +81,12 @@ The script will prompt you to choose:
 1. **Organize Desktop** - Sort files from your Desktop folder
 2. **Select custom folder** - Choose any folder to organize using a folder selection dialog
 3. **Exit** - Quit the script
+
+### Folder Selection
+When you choose "Select custom folder", a native macOS folder picker dialog will open, allowing you to:
+- Navigate to any directory on your system
+- Select the folder you want to organize
+- The script will create an `Autosort` folder within your selected directory
 
 ### macOS Double-Click
 Double-click the `run-autosort.command` file to execute the script.
@@ -71,6 +116,12 @@ Each category has:
 
 ```json
 {
+  "metadata": {
+    "version": "1.11",
+    "auto_generated": false,
+    "last_updated": "2025-08-06",
+    "note": "This is a custom configuration example"
+  },
   "categories": {
     "MyCustomCategory": {
       "extensions": [".myfile", ".custom", ".special"],
@@ -79,10 +130,16 @@ Each category has:
     "Images": {
       "extensions": [".jpg", ".png", ".gif"],
       "folder_name": "Images"
+    },
+    "VideoProjects": {
+      "extensions": [".prproj", ".veg", ".drp"],
+      "folder_name": "Video Projects"
     }
   }
 }
 ```
+
+See `example_custom_config.json` for a complete example with all available categories.
 
 #### Adding New Categories
 
@@ -100,7 +157,7 @@ You can:
 
 #### Default Configuration
 
-If no `autosort_config.json` file exists, the script will create one with default categories including Images, Audio, Video, Documents, Code, Archives, and more.
+If no `autosort_config.json` file exists, the script will create one with **25+ default categories** including all the categories listed above. The default configuration is comprehensive and covers most common file types.
 
 #### Automatic Updates
 
@@ -168,14 +225,14 @@ backup_*
 
 ## How It Works
 
-1. The script prompts you to choose between Desktop organization or custom folder selection
-2. If you choose custom folder, a folder selection dialog opens to let you pick any directory
-3. Loads the configuration from `autosort_config.json` (creates default if not exists)
-4. Creates an `Autosort` folder in the selected directory
-5. Scans all files in the selected directory (excluding those in `.sortignore`)
-6. Categorizes each file based on its extension using the configuration
-7. Moves files to appropriate subfolders within `Autosort`
-8. Handles naming conflicts by appending numbers or timestamps
+1. **Startup Menu**: The script prompts you to choose between Desktop organization or custom folder selection
+2. **Folder Selection**: If you choose custom folder, a native macOS folder picker dialog opens to let you pick any directory
+3. **Configuration Loading**: Loads the configuration from `autosort_config.json` (creates default if not exists)
+4. **Directory Creation**: Creates an `Autosort` folder in the selected directory
+5. **File Scanning**: Scans all files in the selected directory (excluding those in `.sortignore`)
+6. **Categorization**: Categorizes each file based on its extension using the configuration
+7. **File Moving**: Moves files to appropriate subfolders within `Autosort`
+8. **Conflict Resolution**: Handles naming conflicts by appending numbers or timestamps
 
 ## Safety Features
 
@@ -186,9 +243,17 @@ backup_*
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.6+ (with standard library modules)
 - macOS (for Desktop path detection and folder selection dialog)
 - Read/write permissions on the directory you want to organize
+
+### Dependencies
+
+The script uses only Python standard library modules, so no additional packages need to be installed:
+- `fnmatch`, `shutil`, `os`, `sys`, `json`, `pathlib`, `typing`
+- `subprocess`, `time`, `datetime`, `itertools`
+
+The script automatically checks for all required dependencies on startup and will display helpful error messages if any are missing.
 
 ## License
 
