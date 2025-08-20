@@ -1,9 +1,9 @@
 {
       "metadata": {
-        "version": "2.0",
+        "version": "2.1",
         "auto_generated": false,
         "last_updated": "2025-08-20",
-        "note": "This is a custom configuration example"
+        "note": "This is a custom configuration example - auto-updates are now manual only"
     },
   "categories": {
     "Images": {
@@ -40,27 +40,156 @@
     },
     "Audio": {
       "extensions": [".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg", ".wma", ".aiff", ".alac", ".opus", ".amr", ".mid", ".midi", ".wv", ".ra", ".ape", ".dts"],
-      "folder_name": "Audio"
+      "folder_name": "Audio",
+      "subcategories": {
+        "Music": {
+          "patterns": ["*music*", "*song*", "*track*", "*album*", "*playlist*"],
+          "folder_name": "Music"
+        },
+        "Podcasts": {
+          "patterns": ["*podcast*", "*episode*", "*show*"],
+          "folder_name": "Podcasts"
+        },
+        "Voice_Recordings": {
+          "patterns": ["*voice*", "*recording*", "*memo*", "*note*", "*interview*"],
+          "folder_name": "Voice Recordings"
+        },
+        "Sound_Effects": {
+          "patterns": ["*sfx*", "*sound*", "*effect*", "*audio*"],
+          "folder_name": "Sound Effects"
+        },
+        "Audiobooks": {
+          "patterns": ["*audiobook*", "*book*", "*chapter*"],
+          "folder_name": "Audiobooks"
+        }
+      }
     },
     "Video": {
       "extensions": [".mp4", ".mov", ".avi", ".mkv", ".flv", ".wmv", ".webm", ".m4v", ".3gp", ".mpeg", ".mpg", ".ts", ".m2ts", ".mts", ".m2v", ".divx", ".ogv", ".h264", ".h265", ".hevc", ".vob", ".rm", ".asf", ".mxf"],
-      "folder_name": "Video"
+      "folder_name": "Video",
+      "subcategories": {
+        "Movies": {
+          "patterns": ["*movie*", "*film*", "*cinema*"],
+          "folder_name": "Movies"
+        },
+        "TV_Shows": {
+          "patterns": ["*episode*", "*season*", "*series*", "*show*"],
+          "folder_name": "TV Shows"
+        },
+        "Tutorials": {
+          "patterns": ["*tutorial*", "*howto*", "*guide*", "*lesson*", "*course*"],
+          "folder_name": "Tutorials"
+        },
+        "Screen_Recordings": {
+          "patterns": ["*screen*", "*recording*", "*capture*", "*demo*"],
+          "folder_name": "Screen Recordings"
+        },
+        "Home_Videos": {
+          "patterns": ["*home*", "*family*", "*personal*", "*vacation*", "*trip*"],
+          "folder_name": "Home Videos"
+        }
+      }
     },
     "Text": {
       "extensions": [".txt", ".md", ".rtf", ".log", ".csv", ".tex", ".json", ".xml", ".yaml", ".yml", ".ini", ".cfg", ".conf", ".toml", ".adoc", ".asciidoc", ".rst", ".properties"],
-      "folder_name": "Text"
+      "folder_name": "Text",
+      "subcategories": {
+        "Markdown": {
+          "extensions": [".md", ".markdown"],
+          "folder_name": "Markdown"
+        },
+        "Logs": {
+          "extensions": [".log"],
+          "patterns": ["*log*", "*error*", "*debug*"],
+          "folder_name": "Logs"
+        },
+        "Data": {
+          "extensions": [".csv", ".json", ".xml", ".yaml", ".yml"],
+          "folder_name": "Data"
+        },
+        "Config": {
+          "extensions": [".ini", ".cfg", ".conf", ".toml", ".properties"],
+          "folder_name": "Config"
+        },
+        "Notes": {
+          "patterns": ["*note*", "*todo*", "*readme*"],
+          "folder_name": "Notes"
+        }
+      }
     },
     "Documents": {
       "extensions": [".pdf", ".doc", ".docx", ".pages", ".odt"],
-      "folder_name": "Documents"
+      "folder_name": "Documents",
+      "subcategories": {
+        "PDFs": {
+          "extensions": [".pdf"],
+          "folder_name": "PDFs"
+        },
+        "Word_Documents": {
+          "extensions": [".doc", ".docx", ".odt"],
+          "folder_name": "Word Documents"
+        },
+        "Pages_Documents": {
+          "extensions": [".pages"],
+          "folder_name": "Pages Documents"
+        },
+        "Scanned_Documents": {
+          "patterns": ["*scan*", "*scanned*", "*document*"],
+          "folder_name": "Scanned Documents"
+        }
+      }
     },
     "Code": {
       "extensions": [".py", ".js", ".sh", ".rb", ".pl", ".c", ".cpp", ".h", ".java", ".go", ".rs", ".ts", ".jsx", ".tsx", ".php", ".swift", ".kt", ".kts", ".scala", ".ps1", ".cs", ".dart", ".r", ".m", ".lua", ".html", ".htm", ".css", ".scss", ".less", ".vue", ".svelte", ".sql"],
-      "folder_name": "Code"
+      "folder_name": "Code",
+      "subcategories": {
+        "Python": {
+          "extensions": [".py", ".pyc", ".pyo", ".pyd"],
+          "folder_name": "Python"
+        },
+        "JavaScript": {
+          "extensions": [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"],
+          "folder_name": "JavaScript"
+        },
+        "Web": {
+          "extensions": [".html", ".htm", ".css", ".scss", ".less", ".sass", ".vue", ".svelte"],
+          "folder_name": "Web"
+        },
+        "Scripts": {
+          "extensions": [".sh", ".bash", ".zsh", ".ps1", ".bat", ".cmd"],
+          "folder_name": "Scripts"
+        },
+        "Mobile": {
+          "extensions": [".swift", ".kt", ".kts", ".dart"],
+          "folder_name": "Mobile"
+        },
+        "Data_Science": {
+          "extensions": [".r", ".m", ".ipynb", ".rdata"],
+          "folder_name": "Data Science"
+        }
+      }
     },
     "Archives": {
       "extensions": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz", ".tgz", ".tar.gz", ".tar.bz2", ".tar.xz", ".zst", ".zstd", ".lz", ".lzma", ".cab", ".ace", ".arj"],
-      "folder_name": "Archives"
+      "folder_name": "Archives",
+      "subcategories": {
+        "Compressed": {
+          "extensions": [".zip", ".rar", ".7z", ".cab", ".ace", ".arj"],
+          "folder_name": "Compressed"
+        },
+        "Tarballs": {
+          "extensions": [".tar", ".tar.gz", ".tar.bz2", ".tar.xz", ".tgz"],
+          "folder_name": "Tarballs"
+        },
+        "Backups": {
+          "patterns": ["*backup*", "*backup*", "*backup*"],
+          "folder_name": "Backups"
+        },
+        "Downloads": {
+          "patterns": ["*download*", "*downloaded*"],
+          "folder_name": "Downloads"
+        }
+      }
     },
     "Minecraft": {
       "extensions": [".jar", ".schem", ".schematic", ".litematic", ".nbt", ".mcfunction"],
@@ -81,7 +210,29 @@
     },
     "3DModels": {
       "extensions": [".stl", ".obj", ".fbx", ".dae", ".3ds", ".ply", ".glb", ".gltf", ".blend", ".3mf", ".igs", ".iges", ".stp", ".step"],
-      "folder_name": "3D Models"
+      "folder_name": "3D Models",
+      "subcategories": {
+        "Print_Ready": {
+          "extensions": [".stl", ".3mf"],
+          "folder_name": "Print Ready"
+        },
+        "CAD_Models": {
+          "extensions": [".igs", ".iges", ".stp", ".step"],
+          "folder_name": "CAD Models"
+        },
+        "Game_Assets": {
+          "extensions": [".fbx", ".glb", ".gltf"],
+          "folder_name": "Game Assets"
+        },
+        "Blender_Files": {
+          "extensions": [".blend"],
+          "folder_name": "Blender Files"
+        },
+        "Scanned_Models": {
+          "patterns": ["*scan*", "*scanned*"],
+          "folder_name": "Scanned Models"
+        }
+      }
     },
     "eBooks": {
       "extensions": [".epub", ".mobi", ".azw", ".azw3", ".fb2"],

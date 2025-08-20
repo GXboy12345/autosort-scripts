@@ -2,13 +2,23 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
-**Current Version**: 2.0 (Aug 2025)
+**Current Version**: 2.1 (Aug 2025)
+
+## What's New in v2.1
+
+- **Enhanced Subcategories**: Comprehensive subcategory system for better file organization
+- **Smart Audio Organization**: Music, podcasts, voice recordings, sound effects, and audiobooks
+- **Video Categorization**: Movies, TV shows, tutorials, screen recordings, and home videos
+- **Code Language Groups**: Python, JavaScript, Web, Scripts, Mobile, and Data Science
+- **Document Types**: PDFs, Word documents, Pages documents, and scanned documents
+- **Archive Management**: Compressed files, tarballs, backups, and downloads
+- **Text Organization**: Markdown, logs, data files, config files, and notes
+- **3D Model Types**: Print-ready, CAD models, game assets, Blender files, and scanned models
 
 ## What's New in v2.0
 
 - **Modern Interface**: Clean CLI with real-time progress
 - **Undo System**: Complete undo functionality with persistent history
-
 - **Modular Architecture**: Clean, maintainable code structure
 - **Enhanced Safety**: Better error handling and file operation safety
 - **Smart Progress**: Real-time progress tracking with detailed feedback
@@ -152,7 +162,7 @@ Continue? (y/N): y
 
 ## Supported File Categories
 
-The script supports **26+ categories** with comprehensive file type coverage:
+The script supports **26+ categories** with comprehensive file type coverage and intelligent subcategorization:
 
 ### Core Media Categories
 - **Images**: JPG, JPEG 2000 (JP2, J2K, JPF, JPX), PNG, GIF, BMP, TIFF/TIF, HEIC, RAW formats (CR2, NEF, ARW, ORF, DNG), SVG, WebP, AVIF, JXL, PSD, AI, EPS, ICO, ICNS, TGA
@@ -164,22 +174,56 @@ The script supports **26+ categories** with comprehensive file type coverage:
   - **RAW Photos**: Unprocessed camera RAW files
   - **General**: Other images that don't fit specific categories
 - **Audio**: MP3, WAV, FLAC, AAC, M4A, OGG, OPUS, AMR, WMA, AIFF, ALAC, MIDI/MID, WV, RA, APE, DTS
+  - **Music**: Music files, songs, tracks, albums, and playlists
+  - **Podcasts**: Podcast episodes and shows
+  - **Voice Recordings**: Voice memos, notes, and interviews
+  - **Sound Effects**: SFX, sound effects, and audio files
+  - **Audiobooks**: Audiobook files, books, and chapters
 - **Video**: MP4, MOV, AVI, MKV, FLV, WMV, WebM, M4V, 3GP, MPEG/MPG, TS, M2TS, MTS, DIVX, OGV, VOB, RM, ASF, MXF, H264, HEVC/H265
+  - **Movies**: Movie and film files
+  - **TV Shows**: Episodes, seasons, and series
+  - **Tutorials**: Tutorial, how-to, guide, lesson, and course videos
+  - **Screen Recordings**: Screen captures, recordings, and demos
+  - **Home Videos**: Personal, family, vacation, and trip videos
 
 ### Document Categories
 - **Documents**: PDF, DOC/DOCX, Pages, ODT
+  - **PDFs**: PDF documents
+  - **Word Documents**: DOC, DOCX, and ODT files
+  - **Pages Documents**: Apple Pages files
+  - **Scanned Documents**: Scanned and document files
 - **Text**: TXT, Markdown (.md), RTF, LOG, CSV, TEX, JSON, XML, YAML/YML, INI, CFG, CONF, TOML, AsciiDoc (.adoc/.asciidoc), reStructuredText (.rst), PROPERTIES
+  - **Markdown**: Markdown and documentation files
+  - **Logs**: Log files, error logs, and debug files
+  - **Data**: CSV, JSON, XML, YAML data files
+  - **Config**: Configuration files (INI, CFG, CONF, TOML, PROPERTIES)
+  - **Notes**: Note files, TODO lists, and README files
 
 ### Development & Code
 - **Code**: Python (.py), JavaScript/TypeScript (.js/.ts/.jsx/.tsx), Shell (.sh), Ruby (.rb), Perl (.pl), C/C++ (.c/.cpp/.h), C# (.cs), Java (.java), Go (.go), Rust (.rs), PHP (.php), Swift (.swift), Kotlin (.kt), Scala (.scala), Dart (.dart), R (.r), Objective-C (.m), Lua (.lua), HTML (.html/.htm), CSS/SCSS/LESS (.css/.scss/.less), Vue (.vue), Svelte (.svelte), SQL (.sql), PowerShell (.ps1)
+  - **Python**: Python scripts and modules
+  - **JavaScript**: JavaScript, TypeScript, and Node.js files
+  - **Web**: HTML, CSS, and web framework files
+  - **Scripts**: Shell scripts, batch files, and automation scripts
+  - **Mobile**: Swift, Kotlin, and Dart mobile development files
+  - **Data Science**: R, MATLAB, and Jupyter notebook files
 
 ### Archives & System Files
 - **Archives**: ZIP, RAR, 7Z, TAR, TGZ, TAR.GZ, TAR.BZ2, TAR.XZ, GZ, BZ2, XZ, ZST/ZSTD, LZ, LZMA, CAB, ACE, ARJ
+  - **Compressed**: ZIP, RAR, 7Z, CAB, ACE, ARJ files
+  - **Tarballs**: TAR and compressed TAR files
+  - **Backups**: Backup files and archives
+  - **Downloads**: Downloaded archive files
 - **NonMac**: Windows executables (EXE, MSI, DLL, COM, BAT, CMD, SYS, SCR), Linux packages (RPM, PKG), AppImage
 - **DiskImages**: DMG, ISO, IMG, BIN, TOAST, VHD/VHDX, VMDK, QCOW2
 
 ### Creative & Professional
 - **3DModels**: STL, OBJ, FBX, DAE, 3DS, PLY, GLB, GLTF, BLEND, 3MF, IGS/IGES, STP/STEP
+  - **Print Ready**: STL and 3MF files for 3D printing
+  - **CAD Models**: IGS, IGES, STP, STEP engineering files
+  - **Game Assets**: FBX, GLB, GLTF files for game development
+  - **Blender Files**: BLEND files for Blender projects
+  - **Scanned Models**: 3D scanned model files
 - **MusicScores**: MuseScore (.mscz/.mscx)
 
 ### Specialized Categories
