@@ -49,7 +49,7 @@ main() {
     
     # Define the script directory
     SCRIPT_DIR="$HOME/Desktop/Autosortscripts"
-    PYTHON_SCRIPT="$SCRIPT_DIR/autosort_gui.py"
+    PYTHON_SCRIPT="$SCRIPT_DIR/autosort.py"
     
     print_status "Script directory: $SCRIPT_DIR"
     
@@ -73,16 +73,16 @@ main() {
     
     # Check if the Python script exists
     if ! file_exists "$PYTHON_SCRIPT"; then
-        print_error "Python GUI script not found: $PYTHON_SCRIPT"
-        print_status "Please ensure autosort_gui.py is in the script directory"
+        print_error "Python script not found: $PYTHON_SCRIPT"
+        print_status "Please ensure autosort.py is in the script directory"
         exit 1
     fi
     
-    print_success "Python GUI script found"
+    print_success "Python script found"
     
     # Check if we have read and execute permissions for the script
     if ! [ -r "$PYTHON_SCRIPT" ] || ! [ -x "$PYTHON_SCRIPT" ]; then
-        print_warning "Setting execute permissions on autosort_gui.py..."
+        print_warning "Setting execute permissions on autosort.py..."
         chmod +x "$PYTHON_SCRIPT"
     fi
     
@@ -104,9 +104,9 @@ main() {
     
     print_success "Changed to script directory: $(pwd)"
     
-    # Run the Python GUI script
+    # Run the Python script with GUI flag
     print_status "Launching AutoSort GUI..."
-    if python3 ./autosort_gui.py; then
+    if python3 ./autosort.py --gui; then
         print_success "AutoSort GUI completed successfully"
         exit 0
     else

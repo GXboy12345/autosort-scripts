@@ -98,7 +98,7 @@ main() {
     # Run the Python script
     print_status "Executing AutoSort script..."
     if python3 ./autosort.py; then
-        print_success "AutoSort completed successfully"
+        print_success "AutoSort script finished"
         exit 0
     else
         print_error "AutoSort failed with exit code $?"

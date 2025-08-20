@@ -2,25 +2,34 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
-**Current Version**: 2.0 (Aug 2025)
+**Current Version**: 1.14 (December 2024)
 
-## What's New in v2.0
+## What's New in v1.14 - Major EUX Improvements
 
-- **Modern Interface**: Clean CLI with real-time progress
-- **Undo System**: Complete undo functionality with persistent history
+- **🎯 Dry Run Mode**: Preview what files will be moved before actually moving them
+- **🔧 Interactive Configuration Wizard**: Easy-to-use menu for customizing categories and settings
+- **🖥️ Graphical User Interface**: New GUI version for users who prefer visual interfaces
+- **📊 File Analysis & Statistics**: See detailed breakdown of files by category and size
+- **📈 Progress Indicators**: Real-time progress tracking with percentage completion
+- **🎨 Enhanced Visual Feedback**: Emojis and color-coded status messages
+- **⚠️ Better Error Reporting**: Detailed error summaries and troubleshooting information
+- **🔄 Improved User Flow**: Streamlined menus and clearer navigation
+- **🔒 Smart Configuration Management**: Manual updates with conflict resolution, auto-updates disabled for user modifications
 
-- **Modular Architecture**: Clean, maintainable code structure
-- **Enhanced Safety**: Better error handling and file operation safety
-- **Smart Progress**: Real-time progress tracking with detailed feedback
-- **Configuration Wizard**: Interactive configuration management with category editing
+## What's New in v1.13
+
+- **Smart Image Subfolder Organization**: Automatically categorizes images into subfolders based on metadata and filename patterns
+- **Screenshot Detection**: Identifies and separates screenshots from other images using filename patterns and EXIF data
+- **Adobe Software Detection**: Recognizes images processed through Adobe Photoshop, Lightroom, and Camera Raw
+- **Camera Photo Identification**: Separates camera photos based on EXIF metadata
+- **Design File Organization**: Groups design files (PSD, AI, EPS) separately from regular images
+- **RAW Photo Support**: Dedicated subfolder for RAW camera formats
 
 ## Features
 
 - **Flexible Source Selection**: Choose between organizing your Desktop or any custom folder
 - **Preview Mode**: See what will happen before moving any files (dry run)
-- **Detailed Output**: Visually appealing per-file display showing destination paths
-- **File Analysis**: Statistics by category with file counts and sizes
-- **Configuration Wizard**: Interactive wizard for adding, editing, and managing categories
+- **Interactive Configuration**: Easy-to-use wizard for customizing categories and settings
 - **Graphical Interface**: Both command-line and GUI versions available
 - **Automatic Categorization**: Files are sorted into categories based on their file extensions
 - **Configurable Categories**: Customize categories, file types, and folder names via JSON configuration
@@ -30,13 +39,11 @@ A Python script that automatically organizes files into categorized folders. Can
 - **Comprehensive File Types**: Supports images, audio, video, documents, code, archives, and more
 - **Progress Tracking**: Real-time progress indicators and detailed statistics
 - **Smart Image Organization**: Advanced image categorization with subfolders
-- **Undo Functionality**: Complete undo system with transaction tracking
-
 
 ## Installation
 
 1. Clone or download this repository
-2. Ensure you have Python 3.8+ installed
+2. Ensure you have Python 3.6+ installed
 3. Install required dependencies:
    
    **Option A: Automatic Installation (macOS)**
@@ -66,24 +73,11 @@ The script will present you with a menu:
 5. **Preview Downloads organization (dry run)** - See what would happen without moving files
 6. **Preview custom folder organization (dry run)** - See what would happen without moving files
 7. **Configuration wizard** - Customize categories and settings
-8. **Undo Last Operation** - Revert the last file organization
-9. **Exit** - Quit the application
-
-### Command Line Options
-```bash
-# Use CLI interface (default)
-python3 autosort.py
-
-# Use GUI interface (when available)
-python3 autosort.py --gui
-
-# Show help
-python3 autosort.py --help
-```
+8. **Exit** - Quit the script
 
 ### Graphical User Interface
 ```bash
-python3 autosort.py --gui
+python3 autosort_gui.py
 ```
 
 Or double-click the `run-autosort-gui.command` file.
@@ -96,63 +90,81 @@ The GUI provides:
 - **Detailed log window** showing all operations
 - **File analysis** with category breakdowns
 - **Easy start/stop controls**
-- **Undo functionality** with one-click undo button
-
-- **Threaded operations** for responsive interface
 
 ### macOS Double-Click
 - **Command Line**: Double-click `run-autosort.command`
 - **GUI**: Double-click `run-autosort-gui.command`
 
+## EUX Improvements
 
+### 🎯 Dry Run Mode
+The new preview mode lets you see exactly what files will be moved where before actually moving them:
 
-## Undo System
-
-AutoSort includes a complete undo system that allows you to revert file organization operations:
-
-### How It Works
-- **Transaction-based**: Each organization operation is tracked as a complete transaction
-- **Persistent Storage**: Undo history is automatically saved to `autosort_undo.json`
-- **Smart Rollback**: Files are moved back to their original locations
-- **Conflict Resolution**: Handles cases where original locations are no longer available
-
-### Using Undo
-```bash
-# From the main menu, select option 8
-8. Undo Last Operation
+```
+📋 Preview Summary: 15 files would be organized
+💡 Run the script again and choose option 1 or 2 to actually move the files
 ```
 
-### Undo Information
-The system shows you what can be undone:
+This eliminates anxiety about losing files and helps users understand the organization process.
+
+### 🔧 Configuration Wizard
+The interactive configuration wizard makes it easy to customize AutoSort:
+
+- **View current categories** with file counts and sizes
+- **Add new categories** with custom extensions
+- **Edit existing categories** (rename folders, add/remove extensions)
+- **Toggle auto-updates** for configuration changes
+- **Reset to defaults** if needed
+
+### 📊 File Analysis & Statistics
+Before organizing, AutoSort shows detailed statistics:
+
 ```
-↩️  Can undo: Organize Desktop
+📊 File Analysis
+------------------------------
+📁 Total files: 47
+💾 Total size: 2.3 GB
+
+📋 Files by category:
+  Images: 23 files (1.8 GB)
+  Documents: 12 files (156.2 MB)
+  Audio: 8 files (245.7 MB)
+  Video: 4 files (89.1 MB)
 ```
 
-### Undo Process
-1. **Confirmation**: You'll be asked to confirm the undo operation
-2. **File Restoration**: Files are moved back to their original locations
-3. **Conflict Handling**: If a file already exists, it gets a unique name
-4. **Status Update**: You'll see the results of the undo operation
+### 📈 Progress Tracking
+Real-time progress indicators show exactly what's happening:
 
-### Undo Limitations
-- **File Modifications**: If files were modified after organization, they won't be restored
-- **Manual Changes**: Files moved manually after organization aren't tracked
-- **System Files**: Some system files may not be restorable due to permissions
-
-### Example Undo Session
 ```
-↩️  Undoing: Organize Desktop
-Continue? (y/N): y
+📊 Progress: 45.2% (21/47)
+📄 Would move 'document.pdf' → 'Documents/'
+```
 
-✅ Operation undone successfully
-   Files restored: 45
-   Errors: 0
-   Original locations preserved
+### 🎨 Enhanced Visual Feedback
+Color-coded status messages and emojis make it easy to understand what's happening:
+
+- ✅ Success messages
+- ❌ Error messages  
+- ⚠️ Warning messages
+- 📋 Information messages
+- 🔄 Progress updates
+
+### ⚠️ Better Error Reporting
+Detailed error summaries help users troubleshoot issues:
+
+```
+⚠️ Error Summary
+--------------------
+
+PermissionError (3 occurrences):
+  • Failed to move important.pdf
+  • Failed to move project.zip
+  • Failed to move backup.db
 ```
 
 ## Supported File Categories
 
-The script supports **26+ categories** with comprehensive file type coverage:
+The script supports **25+ categories** with comprehensive file type coverage:
 
 ### Core Media Categories
 - **Images**: JPG, JPEG 2000 (JP2, J2K, JPF, JPX), PNG, GIF, BMP, TIFF/TIF, HEIC, RAW formats (CR2, NEF, ARW, ORF, DNG), SVG, WebP, AVIF, JXL, PSD, AI, EPS, ICO, ICNS, TGA
@@ -168,6 +180,8 @@ The script supports **26+ categories** with comprehensive file type coverage:
 
 ### Document Categories
 - **Documents**: PDF, DOC/DOCX, Pages, ODT
+- **Spreadsheets**: XLS/XLSX/XLSM, CSV, TSV
+- **Presentations**: PPT/PPTX, PPS/PPSX
 - **Text**: TXT, Markdown (.md), RTF, LOG, CSV, TEX, JSON, XML, YAML/YML, INI, CFG, CONF, TOML, AsciiDoc (.adoc/.asciidoc), reStructuredText (.rst), PROPERTIES
 
 ### Development & Code
@@ -180,6 +194,8 @@ The script supports **26+ categories** with comprehensive file type coverage:
 
 ### Creative & Professional
 - **3DModels**: STL, OBJ, FBX, DAE, 3DS, PLY, GLB, GLTF, BLEND, 3MF, IGS/IGES, STP/STEP
+- **VideoProjects**: Adobe Premiere (.prproj), Vegas (.veg), DaVinci Resolve (.drp), Final Cut Pro (.fcpxml), After Effects (.aep)
+- **AudioProjects**: FL Studio (.flp), Ableton Live (.als), Audacity (.aup/.aup3), Pro Tools (.sesx/.ptx), Reaper (.rpp/.rpl/.rpreset)
 - **MusicScores**: MuseScore (.mscz/.mscx)
 
 ### Specialized Categories
@@ -233,7 +249,7 @@ Each category has:
 ```json
 {
   "metadata": {
-    "version": "2.0",
+    "version": "1.14",
     "auto_generated": false,
     "last_updated": "2024-12-01",
     "note": "This is a custom configuration example"
@@ -246,6 +262,10 @@ Each category has:
     "Images": {
       "extensions": [".jpg", ".png", ".gif"],
       "folder_name": "Images"
+    },
+    "VideoProjects": {
+      "extensions": [".prproj", ".veg", ".drp"],
+      "folder_name": "Video Projects"
     }
   }
 }
@@ -298,7 +318,7 @@ You can:
 
 #### Default Configuration
 
-If no `autosort_config.json` file exists, the script will create one with **26 default categories** including all the categories listed above. The default configuration is comprehensive and covers most common file types.
+If no `autosort_config.json` file exists, the script will create one with **25+ default categories** including all the categories listed above. The default configuration is comprehensive and covers most common file types.
 
 #### Smart Configuration Management
 
@@ -322,6 +342,9 @@ The configuration system now uses intelligent management to preserve user custom
 - The wizard shows whether your configuration is auto-generated or user-modified
 - User-modified configurations show when they were last changed
 - Clear guidance on how to get updates while preserving customizations
+- **Version checking**: Automatically checks for updates from the remote configuration before showing the menu
+- **Update notifications**: Alerts users when newer configuration versions are available
+- **Smart version handling**: Handles unusual cases where local version might be newer than remote
 
 ### Ignoring Files with .sortignore
 
@@ -396,7 +419,6 @@ Images are automatically organized into subfolders based on their characteristic
 ## Safety Features
 
 - **Preview Mode**: See what will happen before moving any files
-- **Undo System**: Complete undo functionality with persistent history
 - **No Overwriting**: Files with duplicate names get unique names
 - **Permission Checks**: Verifies read/write permissions before moving files
 - **Error Handling**: Graceful handling of permission errors and file access issues
@@ -405,7 +427,7 @@ Images are automatically organized into subfolders based on their characteristic
 
 ## Requirements
 
-- Python 3.8+ (with standard library modules)
+- Python 3.6+ (with standard library modules)
 - macOS (for Desktop path detection and folder selection dialog)
 - Read/write permissions on the directory you want to organize
 - tkinter (for GUI version - usually included with Python)
@@ -422,7 +444,8 @@ The script automatically checks for all required dependencies on startup and wil
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+The MIT License is a permissive license that allows others to use, modify, and distribute your code with very few restrictions. It's one of the most popular open source licenses due to its simplicity and permissiveness.
+
 ## Contributing
 
-Feel free to submit issues, feature requests, or pull requests to improve the script.
-
+Feel free to submit issues, feature requests, or pull requests to improve the script. 
