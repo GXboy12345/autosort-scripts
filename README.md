@@ -2,7 +2,7 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
-**Current Version**: 2.1 (Aug 2025)
+**Current Version**: 2.1 (2025-08-20)
 
 ## What's New in v2.1
 
@@ -71,13 +71,13 @@ python3 autosort.py
 The script will present you with a menu:
 1. **Organize Desktop** - Sort files from your Desktop folder
 2. **Organize Downloads** - Sort files from your Downloads folder
-3. **Organize custom folder** - Choose any folder to organize using a folder selection dialog
-4. **Preview Desktop organization (dry run)** - See what would happen without moving files
-5. **Preview Downloads organization (dry run)** - See what would happen without moving files
-6. **Preview custom folder organization (dry run)** - See what would happen without moving files
-7. **Configuration wizard** - Customize categories and settings
+3. **Organize Custom Folder** - Choose any folder to organize using a folder selection dialog
+4. **Preview Desktop Organization** - See what would happen without moving files
+5. **Preview Downloads Organization** - See what would happen without moving files
+6. **Preview Custom Folder Organization** - See what would happen without moving files
+7. **Configuration Wizard** - Customize categories and settings
 8. **Undo Last Operation** - Revert the last file organization
-9. **Exit** - Quit the application
+q. **Exit** - Quit the application
 
 ### Command Line Options
 ```bash
@@ -172,7 +172,6 @@ The script supports **26+ categories** with comprehensive file type coverage and
   - **Web Downloads**: Images downloaded from the web (common naming patterns)
   - **Design Files**: Professional design files (PSD, AI, EPS, Sketch, Figma)
   - **RAW Photos**: Unprocessed camera RAW files
-  - **General**: Other images that don't fit specific categories
 - **Audio**: MP3, WAV, FLAC, AAC, M4A, OGG, OPUS, AMR, WMA, AIFF, ALAC, MIDI/MID, WV, RA, APE, DTS
   - **Music**: Music files, songs, tracks, albums, and playlists
   - **Podcasts**: Podcast episodes and shows
@@ -252,6 +251,7 @@ The easiest way to customize AutoSort is through the interactive configuration w
    - **Edit existing category**: Modify folder names and extensions
    - **Manual update from defaults**: Merge new default categories/extensions with your customizations
    - **Reset to defaults**: Restore default configuration (re-enables auto-updates)
+   - **Back to main menu**: Return to the main menu
 
 ### Custom Categories with autosort_config.json
 
@@ -277,10 +277,10 @@ Each category has:
 ```json
 {
   "metadata": {
-    "version": "2.0",
+    "version": "2.1",
     "auto_generated": false,
-    "last_updated": "2024-12-01",
-    "note": "This is a custom configuration example"
+    "last_updated": "2025-08-20",
+    "note": "This is a custom configuration example - auto-updates are now manual only"
   },
   "categories": {
     "MyCustomCategory": {

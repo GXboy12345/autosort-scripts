@@ -137,7 +137,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="AutoSort - File Organizer with Enhanced UX",
+        description="AutoSort - File Organizer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
