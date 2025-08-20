@@ -1,6 +1,6 @@
 {
       "metadata": {
-        "version": "1.12",
+        "version": "1.13",
         "auto_generated": false,
         "last_updated": "2025-08-09",
         "note": "This is a custom configuration example - set auto_generated to false to prevent automatic updates"
@@ -8,7 +8,35 @@
   "categories": {
     "Images": {
       "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".heic", ".raw", ".svg", ".webp", ".psd", ".ai", ".eps", ".ico", ".avif", ".jxl", ".jp2", ".j2k", ".jpf", ".jpx", ".tga", ".dng", ".cr2", ".nef", ".orf", ".arw", ".icns"],
-      "folder_name": "Images"
+      "folder_name": "Images",
+      "subcategories": {
+        "Screenshots": {
+          "patterns": ["Screenshot*", "Screen Shot*"],
+          "exif_indicators": ["screenshot_software"],
+          "folder_name": "Screenshots"
+        },
+        "Adobe_Edited": {
+          "exif_indicators": ["Adobe Photoshop", "Adobe Lightroom", "Adobe Camera Raw", "Adobe"],
+          "folder_name": "Adobe Edited"
+        },
+        "Camera_Photos": {
+          "exif_indicators": ["camera_make", "camera_model"],
+          "folder_name": "Camera Photos"
+        },
+        "Web_Downloads": {
+          "patterns": ["image*", "img*", "photo*"],
+          "exif_indicators": ["web_browser", "download_software"],
+          "folder_name": "Web Downloads"
+        },
+        "Design_Files": {
+          "extensions": [".psd", ".ai", ".eps", ".sketch", ".fig"],
+          "folder_name": "Design Files"
+        },
+        "RAW_Photos": {
+          "extensions": [".raw", ".dng", ".cr2", ".nef", ".arw", ".orf"],
+          "folder_name": "RAW Photos"
+        }
+      }
     },
     "Audio": {
       "extensions": [".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg", ".wma", ".aiff", ".alac", ".opus", ".amr", ".mid", ".midi", ".wv", ".ra", ".ape", ".dts"],

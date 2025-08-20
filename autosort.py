@@ -17,8 +17,9 @@ import shutil
 import os
 import sys
 import json
+import re
 from pathlib import Path
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Tuple
 
 # —— Configuration —— #
 SCRIPT_DIR   = Path(__file__).resolve().parent
@@ -28,7 +29,7 @@ CONFIG_FILE  = SCRIPT_DIR / 'autosort_config.json'
 # Default configuration
 DEFAULT_CONFIG = {
     "metadata": {
-        "version": "1.12",
+        "version": "1.13",
         "auto_generated": True,
         "last_updated": "2025-08-09",
         "note": "This is the default configuration - set auto_generated to false to prevent automatic updates"
@@ -36,7 +37,35 @@ DEFAULT_CONFIG = {
     "categories": {
         "Images": {
             "extensions": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif", ".heic", ".raw", ".svg", ".webp", ".psd", ".ai", ".eps", ".ico", ".avif", ".jxl", ".jp2", ".j2k", ".jpf", ".jpx", ".tga", ".dng", ".cr2", ".nef", ".orf", ".arw", ".icns"],
-            "folder_name": "Images"
+            "folder_name": "Images",
+            "subcategories": {
+                "Screenshots": {
+                    "patterns": ["Screenshot*", "Screen Shot*"],
+                    "exif_indicators": ["screenshot_software"],
+                    "folder_name": "Screenshots"
+                },
+                "Adobe_Edited": {
+                    "exif_indicators": ["Adobe Photoshop", "Adobe Lightroom", "Adobe Camera Raw", "Adobe"],
+                    "folder_name": "Adobe Edited"
+                },
+                "Camera_Photos": {
+                    "exif_indicators": ["camera_make", "camera_model"],
+                    "folder_name": "Camera Photos"
+                },
+                "Web_Downloads": {
+                    "patterns": ["image*", "img*", "photo*"],
+                    "exif_indicators": ["web_browser", "download_software"],
+                    "folder_name": "Web Downloads"
+                },
+                "Design_Files": {
+                    "extensions": [".psd", ".ai", ".eps", ".sketch", ".fig"],
+                    "folder_name": "Design Files"
+                },
+                "RAW_Photos": {
+                    "extensions": [".raw", ".dng", ".cr2", ".nef", ".arw", ".orf"],
+                    "folder_name": "RAW Photos"
+                }
+            }
         },
         "Audio": {
             "extensions": [".mp3", ".wav", ".flac", ".aac", ".m4a", ".ogg", ".wma", ".aiff", ".alac", ".opus", ".amr", ".mid", ".midi", ".wv", ".ra", ".ape", ".dts"],
@@ -316,11 +345,44 @@ def save_config(config: Dict) -> None:
             for category_name, category_data in categories.items():
                 extensions = category_data.get("extensions", [])
                 folder_name = category_data.get("folder_name", category_name)
+                subcategories = category_data.get("subcategories", {})
                 
                 # Format extensions as a compact array
                 extensions_str = ', '.join([f'"{ext}"' for ext in extensions])
                 
-                category_str = f'    "{category_name}": {{\n      "extensions": [{extensions_str}],\n      "folder_name": "{folder_name}"\n    }}'
+                category_str = f'    "{category_name}": {{\n      "extensions": [{extensions_str}],\n      "folder_name": "{folder_name}"'
+                
+                # Add subcategories if they exist
+                if subcategories:
+                    category_str += ',\n      "subcategories": {'
+                    subcategory_items = []
+                    for subcat_name, subcat_data in subcategories.items():
+                        subcat_folder = subcat_data.get("folder_name", subcat_name)
+                        patterns = subcat_data.get("patterns", [])
+                        exif_indicators = subcat_data.get("exif_indicators", [])
+                        subcat_extensions = subcat_data.get("extensions", [])
+                        
+                        subcat_str = f'\n        "{subcat_name}": {{\n          "folder_name": "{subcat_folder}"'
+                        
+                        if patterns:
+                            patterns_str = ', '.join([f'"{pattern}"' for pattern in patterns])
+                            subcat_str += f',\n          "patterns": [{patterns_str}]'
+                        
+                        if exif_indicators:
+                            indicators_str = ', '.join([f'"{indicator}"' for indicator in exif_indicators])
+                            subcat_str += f',\n          "exif_indicators": [{indicators_str}]'
+                        
+                        if subcat_extensions:
+                            subcat_ext_str = ', '.join([f'"{ext}"' for ext in subcat_extensions])
+                            subcat_str += f',\n          "extensions": [{subcat_ext_str}]'
+                        
+                        subcat_str += '\n        }'
+                        subcategory_items.append(subcat_str)
+                    
+                    category_str += ','.join(subcategory_items)
+                    category_str += '\n      }'
+                
+                category_str += '\n    }'
                 category_items.append(category_str)
             
             f.write(',\n'.join(category_items))
@@ -500,7 +562,8 @@ def check_dependencies():
         'subprocess': 'Subprocess management',
         'time': 'Time access and conversions',
         'datetime': 'Date and time types',
-        'itertools': 'Iterator functions'
+        'itertools': 'Iterator functions',
+        'PIL': 'Image processing (Pillow)'
     }
     
     missing_modules = []
@@ -515,6 +578,9 @@ def check_dependencies():
                 import datetime
             elif module == 'itertools':
                 import itertools
+            elif module == 'PIL':
+                import PIL.Image
+                import PIL.ExifTags
             else:
                 __import__(module)
         except ImportError as e:
@@ -529,6 +595,129 @@ def check_dependencies():
         return False
     
     return True
+
+def analyze_image_metadata(image_path: Path) -> Dict:
+    """Extract and analyze image metadata for categorization."""
+    metadata = {
+        'is_screenshot': False,
+        'software_used': None,
+        'camera_info': None,
+        'creation_date': None,
+        'resolution': None,
+        'color_profile': None
+    }
+    
+    try:
+        import PIL.Image
+        import PIL.ExifTags
+        
+        with PIL.Image.open(image_path) as img:
+            # Extract EXIF data
+            exif = img._getexif()
+            if exif:
+                # Check for software tags
+                software = exif.get(305)  # Software tag
+                if software:
+                    metadata['software_used'] = software
+                
+                # Check for camera info
+                make = exif.get(271)  # Make tag
+                model = exif.get(272)  # Model tag
+                if make or model:
+                    metadata['camera_info'] = f"{make} {model}".strip()
+                
+                # Check creation date
+                date_original = exif.get(36867)  # DateTimeOriginal tag
+                if date_original:
+                    metadata['creation_date'] = date_original
+            
+            # Get image properties
+            metadata['resolution'] = img.size
+            metadata['color_profile'] = img.mode
+            
+    except ImportError:
+        print("Warning: Pillow not available, image metadata analysis disabled")
+    except Exception as e:
+        print(f"Warning: Could not analyze {image_path}: {e}")
+    
+    return metadata
+
+def is_screenshot(filename: str, metadata: Dict) -> bool:
+    """Determine if an image is likely a screenshot."""
+    # Check filename patterns - only the most reliable ones
+    screenshot_patterns = [
+        r'Screenshot.*\.(png|jpg|jpeg)$',
+        r'Screen Shot.*\.(png|jpg|jpeg)$'
+    ]
+    
+    for pattern in screenshot_patterns:
+        if re.match(pattern, filename, re.IGNORECASE):
+            return True
+    
+    # Check metadata indicators
+    if metadata['software_used']:
+        screenshot_software = ['Screenshot', 'Grab', 'Preview', 'Snipping Tool']
+        if any(software.lower() in metadata['software_used'].lower() for software in screenshot_software):
+            return True
+    
+    return False
+
+def categorize_image_subfolder(image_path: Path, metadata: Dict) -> str:
+    """Determine the appropriate subfolder for an image."""
+    filename = image_path.name
+    
+    # Check for design files first (by extension)
+    design_extensions = ['.psd', '.ai', '.eps', '.sketch', '.fig']
+    if image_path.suffix.lower() in design_extensions:
+        return "Design Files"
+    
+    # Check for RAW photos
+    raw_extensions = ['.raw', '.dng', '.cr2', '.nef', '.arw', '.orf']
+    if image_path.suffix.lower() in raw_extensions:
+        return "RAW Photos"
+    
+    # Check for screenshots
+    if is_screenshot(filename, metadata):
+        return "Screenshots"
+    
+    # Check for Adobe-edited images
+    if metadata['software_used']:
+        adobe_software = ['Adobe Photoshop', 'Adobe Lightroom', 'Adobe Camera Raw', 'Adobe']
+        if any(software.lower() in metadata['software_used'].lower() for software in adobe_software):
+            return "Adobe Edited"
+    
+    # Check for camera photos
+    if metadata['camera_info']:
+        return "Camera Photos"
+    
+    # Check for web downloads
+    web_patterns = [r'^image\d*\.', r'^img\d*\.', r'^photo\d*\.']
+    for pattern in web_patterns:
+        if re.match(pattern, filename, re.IGNORECASE):
+            return "Web Downloads"
+    
+    # Default to general images
+    return "General"
+
+def categorize_with_subfolders(file_path: Path, extension_map: Dict, config: Dict) -> Tuple[str, str]:
+    """Categorize file and determine subfolder if applicable."""
+    ext = file_path.suffix.lower()
+    main_category = extension_map.get(ext, 'Miscellaneous')
+    
+    # Check if this category has subcategories
+    category_config = config.get("categories", {}).get(main_category, {})
+    subcategories = category_config.get("subcategories", {})
+    
+    if not subcategories:
+        return main_category, ""
+    
+    # For images, perform detailed analysis
+    if main_category == "Images":
+        metadata = analyze_image_metadata(file_path)
+        subfolder = categorize_image_subfolder(file_path, metadata)
+        return main_category, subfolder
+    
+    return main_category, ""
 
 def main():
     """Main function with improved error handling."""
@@ -581,13 +770,22 @@ def main():
                     item == target_root):
                     continue
                 
-                # Categorize and move
-                category = categorize(item.suffix, extension_map)
-                cat_dir = ensure_dir(target_root / category)
+                # Categorize with subfolder support
+                category, subfolder = categorize_with_subfolders(item, extension_map, config)
+                
+                # Create directory structure
+                if subfolder:
+                    cat_dir = ensure_dir(target_root / category / subfolder)
+                else:
+                    cat_dir = ensure_dir(target_root / category)
+                
                 dest = unique_path(cat_dir / item.name)
                 
                 if safe_move_file(item, dest):
-                    print(f"Moved '{item.name}' → '{category}/'")
+                    if subfolder:
+                        print(f"Moved '{item.name}' → '{category}/{subfolder}/'")
+                    else:
+                        print(f"Moved '{item.name}' → '{category}/'")
                     moved_count += 1
                 else:
                     error_count += 1

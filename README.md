@@ -2,7 +2,16 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
-**Current Version**: 1.12 (August 2025)
+**Current Version**: 1.13 (August 2025)
+
+## What's New in v1.13
+
+- **Smart Image Subfolder Organization**: Automatically categorizes images into subfolders based on metadata and filename patterns
+- **Screenshot Detection**: Identifies and separates screenshots from other images using filename patterns and EXIF data
+- **Adobe Software Detection**: Recognizes images processed through Adobe Photoshop, Lightroom, and Camera Raw
+- **Camera Photo Identification**: Separates camera photos based on EXIF metadata
+- **Design File Organization**: Groups design files (PSD, AI, EPS) separately from regular images
+- **RAW Photo Support**: Dedicated subfolder for RAW camera formats
 
 ## What's New in v1.12
 
@@ -33,6 +42,13 @@ The script supports **25+ categories** with comprehensive file type coverage:
 
 ### Core Media Categories
 - **Images**: JPG, JPEG 2000 (JP2, J2K, JPF, JPX), PNG, GIF, BMP, TIFF/TIF, HEIC, RAW formats (CR2, NEF, ARW, ORF, DNG), SVG, WebP, AVIF, JXL, PSD, AI, EPS, ICO, ICNS, TGA
+  - **Screenshots**: Automatically detected screenshots (macOS, Windows patterns)
+  - **Adobe Edited**: Images processed through Adobe software (Photoshop, Lightroom, Camera Raw)
+  - **Camera Photos**: Photos taken with digital cameras (identified via EXIF metadata)
+  - **Web Downloads**: Images downloaded from the web (common naming patterns)
+  - **Design Files**: Professional design files (PSD, AI, EPS, Sketch, Figma)
+  - **RAW Photos**: Unprocessed camera RAW files
+  - **General**: Other images that don't fit specific categories
 - **Audio**: MP3, WAV, FLAC, AAC, M4A, OGG, OPUS, AMR, WMA, AIFF, ALAC, MIDI/MID, WV, RA, APE, DTS
 - **Video**: MP4, MOV, AVI, MKV, FLV, WMV, WebM, M4V, 3GP, MPEG/MPG, TS, M2TS, MTS, DIVX, OGV, VOB, RM, ASF, MXF, H264, HEVC/H265
 
@@ -72,7 +88,19 @@ The script supports **25+ categories** with comprehensive file type coverage:
 
 1. Clone or download this repository
 2. Ensure you have Python 3.6+ installed
-3. No additional dependencies required
+3. Install required dependencies:
+   
+   **Option A: Automatic Installation (macOS)**
+   ```bash
+   # Double-click install_dependencies.command
+   # OR run from terminal:
+   ./install_dependencies.command
+   ```
+   
+   **Option B: Manual Installation**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 
@@ -121,7 +149,7 @@ Each category has:
 ```json
 {
   "metadata": {
-    "version": "1.12",
+    "version": "1.13",
     "auto_generated": false,
     "last_updated": "2025-08-09",
     "note": "This is a custom configuration example"
@@ -150,6 +178,34 @@ See `example_custom_config.json` for a complete example with all available categ
 1. Open `autosort_config.json` in a text editor
 2. Add a new category object with your desired extensions and folder name
 3. Save the file and run the script
+
+#### Image Subfolder Configuration
+
+The Images category supports automatic subfolder organization. You can customize the subcategories by modifying the `subcategories` section:
+
+```json
+"Images": {
+  "extensions": [".jpg", ".png", ".gif"],
+  "folder_name": "Images",
+  "subcategories": {
+    "Screenshots": {
+      "patterns": ["Screenshot*", "Screen Shot*"],
+      "exif_indicators": ["no_camera_data"],
+      "folder_name": "Screenshots"
+    },
+    "Adobe_Edited": {
+      "exif_indicators": ["Adobe Photoshop", "Adobe Lightroom"],
+      "folder_name": "Adobe Edited"
+    }
+  }
+}
+```
+
+**Subcategory Properties:**
+- `patterns`: Filename patterns to match (supports wildcards)
+- `exif_indicators`: EXIF metadata indicators for categorization
+- `extensions`: File extensions specific to this subcategory
+- `folder_name`: The name of the subfolder
 
 #### Modifying Existing Categories
 
@@ -235,8 +291,21 @@ backup_*
 4. **Directory Creation**: Creates an `Autosort` folder in the selected directory
 5. **File Scanning**: Scans all files in the selected directory (excluding those in `.sortignore`)
 6. **Categorization**: Categorizes each file based on its extension using the configuration
-7. **File Moving**: Moves files to appropriate subfolders within `Autosort`
-8. **Conflict Resolution**: Handles naming conflicts by appending numbers or timestamps
+7. **Image Analysis**: For images, analyzes metadata and filename patterns for subfolder categorization
+8. **File Moving**: Moves files to appropriate subfolders within `Autosort` (with image subfolders when applicable)
+9. **Conflict Resolution**: Handles naming conflicts by appending numbers or timestamps
+
+### Image Subfolder Organization
+
+Images are automatically organized into subfolders based on their characteristics:
+
+- **Screenshots**: Detected by filename patterns (Screenshot*, Screen Shot*) and screenshot software metadata
+- **Adobe Edited**: Images processed through Adobe software (Photoshop, Lightroom, Camera Raw)
+- **Camera Photos**: Photos with camera EXIF metadata
+- **Web Downloads**: Images with common web download naming patterns
+- **Design Files**: Professional design formats (PSD, AI, EPS, Sketch, Figma)
+- **RAW Photos**: Unprocessed camera RAW formats
+- **General**: Other images that don't match specific criteria
 
 ## Safety Features
 
@@ -253,11 +322,11 @@ backup_*
 
 ### Dependencies
 
-The script uses only Python standard library modules, so no additional packages need to be installed:
-- `fnmatch`, `shutil`, `os`, `sys`, `json`, `pathlib`, `typing`
-- `subprocess`, `time`, `datetime`, `itertools`
+The script uses Python standard library modules plus one external dependency:
+- **Standard Library**: `fnmatch`, `shutil`, `os`, `sys`, `json`, `pathlib`, `typing`, `subprocess`, `time`, `datetime`, `itertools`, `re`
+- **External**: `Pillow` (for image metadata analysis)
 
-The script automatically checks for all required dependencies on startup and will display helpful error messages if any are missing.
+The script automatically checks for all required dependencies on startup and will display helpful error messages if any are missing. If Pillow is not available, image subfolder categorization will be disabled but the script will continue to function normally.
 
 ## License
 
