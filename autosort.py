@@ -252,15 +252,17 @@ def get_source_directory() -> tuple[Path, Path, bool]:
     print("=" * 40)
     print(f"1. Organize Desktop ({desktop_path})")
     print(f"2. Organize Downloads ({downloads_path})")
-    print("3. Select custom folder")
-    print("4. Preview organization (dry run)")
-    print("5. Configuration wizard")
-    print("6. Exit")
+    print("3. Organize custom folder")
+    print("4. Preview Desktop organization (dry run)")
+    print("5. Preview Downloads organization (dry run)")
+    print("6. Preview custom folder organization (dry run)")
+    print("7. Configuration wizard")
+    print("8. Exit")
     print()
     
     while True:
         try:
-            choice = input("Enter your choice (1-6): ").strip()
+            choice = input("Enter your choice (1-8): ").strip()
             
             if choice == "1":
                 source_dir = desktop_path
@@ -284,7 +286,7 @@ def get_source_directory() -> tuple[Path, Path, bool]:
                     print(f"Selected: {source_dir}")
                     return source_dir, target_root, False
                 else:
-                    print("Please try again or select option 6 to exit.")
+                    print("Please try again or select option 8 to exit.")
                     continue
                     
             elif choice == "4":
@@ -295,16 +297,37 @@ def get_source_directory() -> tuple[Path, Path, bool]:
                 return source_dir, target_root, True
             
             elif choice == "5":
+                print("Preview mode - no files will be moved")
+                source_dir = downloads_path
+                target_root = source_dir / 'Autosort'
+                print(f"Previewing: Downloads ({source_dir})")
+                return source_dir, target_root, True
+            
+            elif choice == "6":
+                print("Preview mode - no files will be moved")
+                print("Opening folder selection dialog...")
+                selected_path = select_folder_dialog()
+                
+                if selected_path:
+                    source_dir = selected_path
+                    target_root = source_dir / 'Autosort'
+                    print(f"Previewing: {source_dir}")
+                    return source_dir, target_root, True
+                else:
+                    print("Please try again or select option 8 to exit.")
+                    continue
+            
+            elif choice == "7":
                 configuration_wizard()
                 # Return to main menu after wizard
                 return get_source_directory()
                     
-            elif choice == "6":
+            elif choice == "8":
                 print("Goodbye!")
                 sys.exit(0)
                 
             else:
-                print("Invalid choice. Please enter 1, 2, 3, 4, 5, or 6.")
+                print("Invalid choice. Please enter 1, 2, 3, 4, 5, 6, 7, or 8.")
                 
         except KeyboardInterrupt:
             print("\nGoodbye!")
@@ -352,7 +375,7 @@ def check_config_version(config: Dict) -> None:
         print(f"📢 New configuration version available!")
         print(f"   Current version: {local_version}")
         print(f"   Remote version: {remote_version}")
-        print(f"   Use 'Manual update from defaults' in the configuration wizard to update")
+        print(f"   Go to Configuration wizard → Manual update from defaults to update")
         print()
     elif local_version == remote_version:
         print(f"✅ Configuration is up to date (v{local_version})")
@@ -374,7 +397,21 @@ def load_config() -> Dict:
                 # Show configuration status
                 auto_generated = config.get("metadata", {}).get("auto_generated", False)
                 if auto_generated:
-                    print("ℹ️  Auto-generated configuration (use 'Manual update from defaults' to get updates)")
+                    print("ℹ️  Auto-generated configuration")
+                    
+                    # Check if we need to update from DEFAULT_CONFIG
+                    default_version = DEFAULT_CONFIG.get("metadata", {}).get("version", "0")
+                    config_version = str(config.get("metadata", {}).get("version", "0"))
+                    
+                    if is_version_newer(default_version, config_version):
+                        print("🔄 Auto-updating configuration from built-in defaults...")
+                        updated_config = update_config_with_defaults(config)
+                        if updated_config != config:
+                            save_config(updated_config)
+                            print(f"✅ Auto-updated configuration from version {config_version} to {default_version}")
+                            config = updated_config
+                        else:
+                            print("✅ Configuration already up to date with built-in defaults")
                 else:
                     print("ℹ️  User-modified configuration (auto-updates disabled)")
                 
@@ -1293,7 +1330,7 @@ def main():
     # Summary
     if dry_run:
         print(f"\n📋 Preview Summary: {len(files_to_process)} files would be organized")
-        print("💡 Run the script again and choose option 1 or 2 to actually move the files")
+        print("💡 Run the script again and choose option 1, 2, or 3 to actually move the files")
     else:
         print(f"\n🎉 Summary: {moved_count} files moved, {error_count} errors")
         if moved_count > 0:

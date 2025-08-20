@@ -68,10 +68,12 @@ python3 autosort.py
 The script will present you with a menu:
 1. **Organize Desktop** - Sort files from your Desktop folder
 2. **Organize Downloads** - Sort files from your Downloads folder
-3. **Select custom folder** - Choose any folder to organize using a folder selection dialog
-4. **Preview organization (dry run)** - See what would happen without moving files
-5. **Configuration wizard** - Customize categories and settings
-6. **Exit** - Quit the script
+3. **Organize custom folder** - Choose any folder to organize using a folder selection dialog
+4. **Preview Desktop organization (dry run)** - See what would happen without moving files
+5. **Preview Downloads organization (dry run)** - See what would happen without moving files
+6. **Preview custom folder organization (dry run)** - See what would happen without moving files
+7. **Configuration wizard** - Customize categories and settings
+8. **Exit** - Quit the script
 
 ### Graphical User Interface
 ```bash
