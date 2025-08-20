@@ -342,12 +342,122 @@ class FileOrganizer:
         # Get main category
         category = extension_map.get(extension, "Miscellaneous")
         
-        # Get subcategory for images
-        subcategory = ""
-        if category == "Images":
-            subcategory = self._categorize_image_subfolder(file_path)
+        # Get subcategory using configuration-based system
+        subcategory = self._categorize_subcategory(file_path, category)
         
         return category, subcategory
+    
+    def _categorize_subcategory(self, file_path: Path, category: str) -> str:
+        """
+        Categorize a file into a subcategory based on configuration.
+        
+        Args:
+            file_path: File path to categorize
+            category: Main category name
+            
+        Returns:
+            Subcategory name or empty string if no subcategory
+        """
+        try:
+            # Get category configuration
+            categories = self.config_manager.get_categories()
+            if category not in categories:
+                return ""
+            
+            category_config = categories[category]
+            if not hasattr(category_config, 'subcategories') or not category_config.subcategories:
+                return ""
+            
+            # Check subcategories in priority order: extensions -> patterns -> exif
+            for subcategory_name, subcategory_config in category_config.subcategories.items():
+                if self._matches_subcategory(file_path, subcategory_config):
+                    return subcategory_config.folder_name
+            
+            return ""
+            
+        except Exception as e:
+            logger.debug(f"Error categorizing subcategory for {file_path}: {e}")
+            return ""
+    
+    def _matches_subcategory(self, file_path: Path, subcategory_config) -> bool:
+        """
+        Check if a file matches a subcategory configuration.
+        
+        Args:
+            file_path: File path to check
+            subcategory_config: Subcategory configuration object
+            
+        Returns:
+            True if file matches subcategory
+        """
+        # Check extensions first (highest priority)
+        if hasattr(subcategory_config, 'extensions') and subcategory_config.extensions:
+            if file_path.suffix.lower() in [ext.lower() for ext in subcategory_config.extensions]:
+                return True
+        
+        # Check patterns second
+        if hasattr(subcategory_config, 'patterns') and subcategory_config.patterns:
+            for pattern in subcategory_config.patterns:
+                if self._matches_pattern(file_path.name, pattern):
+                    return True
+        
+        # Check EXIF indicators third (only for images)
+        if hasattr(subcategory_config, 'exif_indicators') and subcategory_config.exif_indicators:
+            if self._matches_exif_indicators(file_path, subcategory_config.exif_indicators):
+                return True
+        
+        return False
+    
+    def _matches_pattern(self, filename: str, pattern: str) -> bool:
+        """
+        Check if filename matches a pattern with wildcards.
+        
+        Args:
+            filename: Filename to check
+            pattern: Pattern with * wildcards
+            
+        Returns:
+            True if filename matches pattern
+        """
+        import fnmatch
+        return fnmatch.fnmatch(filename.lower(), pattern.lower())
+    
+    def _matches_exif_indicators(self, file_path: Path, exif_indicators: List[str]) -> bool:
+        """
+        Check if file matches EXIF indicators.
+        
+        Args:
+            file_path: File path to check
+            exif_indicators: List of EXIF indicators to check for
+            
+        Returns:
+            True if file matches any EXIF indicator
+        """
+        try:
+            # Only check EXIF for image files
+            image_extensions = ['.jpg', '.jpeg', '.png', '.tiff', '.tif', '.bmp', '.gif', '.webp']
+            if file_path.suffix.lower() not in image_extensions:
+                return False
+            
+            metadata = self._analyze_image_metadata(file_path)
+            
+            # Check software used
+            if metadata.get('software_used'):
+                for indicator in exif_indicators:
+                    if indicator.lower() in metadata['software_used'].lower():
+                        return True
+            
+            # Check camera info
+            if metadata.get('camera_info'):
+                for indicator in exif_indicators:
+                    if indicator.lower() in metadata['camera_info'].lower():
+                        return True
+            
+            return False
+            
+        except Exception as e:
+            logger.debug(f"Error checking EXIF indicators for {file_path}: {e}")
+            return False
     
     def _categorize_image_subfolder(self, file_path: Path) -> str:
         """

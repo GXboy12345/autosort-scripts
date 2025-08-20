@@ -1,0 +1,13 @@
+# AutoSort - File Organizer Dependencies
+# =====================================
+# This file contains the Python dependencies required for AutoSort
+
+# Core dependencies
+Pillow>=9.0.0
+
+# Note: All other dependencies are part of Python's standard library:
+# - fnmatch, shutil, os, sys, json, pathlib, typing, subprocess, time, datetime, itertools, re
+# - tkinter (for GUI - usually included with Python)
+# - threading, queue (for GUI threading)
+# - logging (for logging functionality)
+# - argparse (for command line argument parsing)

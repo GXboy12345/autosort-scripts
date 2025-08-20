@@ -57,10 +57,17 @@ main() {
     if ! command_exists python3; then
         print_error "Python3 is not installed or not in PATH"
         print_status "Please install Python3 from https://www.python.org/downloads/"
+        print_status "Or install via Homebrew: brew install python"
         exit 1
     fi
     
-    print_success "Python3 found: $(python3 --version)"
+    # Detect Python environment
+    PYTHON_PATH=$(which python3)
+    if [[ "$PYTHON_PATH" == *"/opt/homebrew/"* ]] || [[ "$PYTHON_PATH" == *"/usr/local/"* ]]; then
+        print_success "Python3 found (Homebrew): $(python3 --version)"
+    else
+        print_success "Python3 found (System): $(python3 --version)"
+    fi
     
     # Check if the script directory exists
     if ! directory_exists "$SCRIPT_DIR"; then
