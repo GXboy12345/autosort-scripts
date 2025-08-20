@@ -1,0 +1,33 @@
+# AutoSort GUI - Additional Requirements
+# =====================================
+# This file contains requirements for the GUI version of AutoSort
+
+# Core AutoSort requirements
+-r requirements.txt
+
+# GUI-specific requirements
+# -------------------------
+# tkinter - GUI framework (usually included with Python)
+# threading - Thread management (part of Python standard library)  
+# queue - Thread-safe queues (part of Python standard library)
+# urllib.request - HTTP requests for configuration version checking (part of Python standard library)
+
+# Note: These are typically included with Python installations
+# If you get import errors for tkinter, you may need to install it separately:
+
+# On Ubuntu/Debian:
+# sudo apt-get install python3-tk
+
+# On CentOS/RHEL/Fedora:
+# sudo yum install tkinter
+# or
+# sudo dnf install python3-tkinter
+
+# On macOS:
+# tkinter is usually included with Python from python.org
+
+# On Windows:
+# tkinter is usually included with Python installations
+
+# To verify tkinter is available:
+# python3 -c "import tkinter; print('GUI support available')"

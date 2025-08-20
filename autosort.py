@@ -18,8 +18,10 @@ import os
 import sys
 import json
 import re
+import urllib.request
 from pathlib import Path
 from typing import List, Dict, Set, Tuple
+from datetime import datetime
 
 # —— Configuration —— #
 SCRIPT_DIR   = Path(__file__).resolve().parent
@@ -29,10 +31,10 @@ CONFIG_FILE  = SCRIPT_DIR / 'autosort_config.json'
 # Default configuration
 DEFAULT_CONFIG = {
     "metadata": {
-        "version": "1.13",
+        "version": "1.14",
         "auto_generated": True,
-        "last_updated": "2025-08-09",
-        "note": "This is the default configuration - set auto_generated to false to prevent automatic updates"
+        "last_updated": "2024-12-01",
+        "note": "This is the default configuration - auto-updates are now manual only"
     },
     "categories": {
         "Images": {
@@ -189,6 +191,23 @@ def get_desktop_path() -> Path:
     # If none found, return the standard Desktop path
     return Path.home() / 'Desktop'
 
+def get_downloads_path() -> Path:
+    """Get the Downloads path, handling different locales on macOS."""
+    # Try common Downloads paths
+    possible_paths = [
+        Path.home() / 'Downloads',
+        Path.home() / 'Descargas',    # Spanish
+        Path.home() / 'Téléchargements', # French
+        Path.home() / 'Downloads'     # Fallback
+    ]
+    
+    for path in possible_paths:
+        if path.exists() and path.is_dir():
+            return path
+    
+    # If none found, return the standard Downloads path
+    return Path.home() / 'Downloads'
+
 def select_folder_dialog() -> Path:
     """Open a folder selection dialog and return the selected path."""
     try:
@@ -224,28 +243,38 @@ def select_folder_dialog() -> Path:
         print(f"Error opening folder dialog: {e}")
         return None
 
-def get_source_directory() -> tuple[Path, Path]:
+def get_source_directory() -> tuple[Path, Path, bool]:
     """Get the source directory and target root based on user choice."""
     desktop_path = get_desktop_path()
+    downloads_path = get_downloads_path()
     
     print("AutoSort - File Organizer")
     print("=" * 40)
     print(f"1. Organize Desktop ({desktop_path})")
-    print("2. Select custom folder")
-    print("3. Exit")
+    print(f"2. Organize Downloads ({downloads_path})")
+    print("3. Select custom folder")
+    print("4. Preview organization (dry run)")
+    print("5. Configuration wizard")
+    print("6. Exit")
     print()
     
     while True:
         try:
-            choice = input("Enter your choice (1-3): ").strip()
+            choice = input("Enter your choice (1-6): ").strip()
             
             if choice == "1":
                 source_dir = desktop_path
                 target_root = source_dir / 'Autosort'
                 print(f"Selected: Desktop ({source_dir})")
-                return source_dir, target_root
+                return source_dir, target_root, False
                 
             elif choice == "2":
+                source_dir = downloads_path
+                target_root = source_dir / 'Autosort'
+                print(f"Selected: Downloads ({source_dir})")
+                return source_dir, target_root, False
+                
+            elif choice == "3":
                 print("Opening folder selection dialog...")
                 selected_path = select_folder_dialog()
                 
@@ -253,17 +282,29 @@ def get_source_directory() -> tuple[Path, Path]:
                     source_dir = selected_path
                     target_root = source_dir / 'Autosort'
                     print(f"Selected: {source_dir}")
-                    return source_dir, target_root
+                    return source_dir, target_root, False
                 else:
-                    print("Please try again or select option 3 to exit.")
+                    print("Please try again or select option 6 to exit.")
                     continue
                     
-            elif choice == "3":
+            elif choice == "4":
+                print("Preview mode - no files will be moved")
+                source_dir = desktop_path
+                target_root = source_dir / 'Autosort'
+                print(f"Previewing: Desktop ({source_dir})")
+                return source_dir, target_root, True
+            
+            elif choice == "5":
+                configuration_wizard()
+                # Return to main menu after wizard
+                return get_source_directory()
+                    
+            elif choice == "6":
                 print("Goodbye!")
                 sys.exit(0)
                 
             else:
-                print("Invalid choice. Please enter 1, 2, or 3.")
+                print("Invalid choice. Please enter 1, 2, 3, 4, 5, or 6.")
                 
         except KeyboardInterrupt:
             print("\nGoodbye!")
@@ -286,6 +327,41 @@ def is_version_newer(default_version: str, config_version: str) -> bool:
             return False
     return False
 
+def fetch_remote_config() -> Dict:
+    """Fetch the remote configuration from GitHub."""
+    remote_url = "https://raw.githubusercontent.com/GXboy12345/autosort-scripts/refs/heads/main/example_custom_config.json"
+    
+    try:
+        with urllib.request.urlopen(remote_url, timeout=10) as response:
+            remote_config = json.loads(response.read().decode('utf-8'))
+            return remote_config
+    except Exception as e:
+        print(f"⚠️  Could not fetch remote configuration: {e}")
+        return None
+
+def check_config_version(config: Dict) -> None:
+    """Check if the local configuration is up to date with the remote version."""
+    remote_config = fetch_remote_config()
+    if not remote_config:
+        return
+    
+    local_version = config.get("metadata", {}).get("version", "0.0")
+    remote_version = remote_config.get("metadata", {}).get("version", "0.0")
+    
+    if is_version_newer(remote_version, local_version):
+        print(f"📢 New configuration version available!")
+        print(f"   Current version: {local_version}")
+        print(f"   Remote version: {remote_version}")
+        print(f"   Use 'Manual update from defaults' in the configuration wizard to update")
+        print()
+    elif local_version == remote_version:
+        print(f"✅ Configuration is up to date (v{local_version})")
+    else:
+        # Local version is newer than remote (unusual but possible)
+        print(f"🔍 Local configuration is newer than remote (v{local_version} vs v{remote_version})")
+        print(f"   This is unusual - you may have a development or custom version")
+        print()
+
 
 def load_config() -> Dict:
     """Load configuration from JSON file or create default if not exists."""
@@ -295,23 +371,25 @@ def load_config() -> Dict:
                 config = json.load(f)
                 print(f"Loaded configuration from {CONFIG_FILE}")
                 
-                # Check version and auto-generated flag
+                # Show configuration status
                 auto_generated = config.get("metadata", {}).get("auto_generated", False)
-                default_version = DEFAULT_CONFIG.get("metadata", {}).get("version", "0")
-                config_version = str(config.get("metadata", {}).get("version", "0"))
-
-                if auto_generated and is_version_newer(default_version, config_version):
-                    updated_config = update_config_with_defaults(config)
-                    if updated_config != config:
-                        save_config(updated_config)
-                        print(f"Auto-generated config updated from version {config_version} to {default_version} with new default categories")
-                        return updated_config
+                if auto_generated:
+                    print("ℹ️  Auto-generated configuration (use 'Manual update from defaults' to get updates)")
+                else:
+                    print("ℹ️  User-modified configuration (auto-updates disabled)")
+                
+                # Check for remote updates
+                check_config_version(config)
                 
                 return config
         else:
             # Create default config file
             save_config(DEFAULT_CONFIG)
             print(f"Created default configuration file: {CONFIG_FILE}")
+            
+            # Check for remote updates
+            check_config_version(DEFAULT_CONFIG)
+            
             return DEFAULT_CONFIG
     except (json.JSONDecodeError, OSError) as e:
         print(f"Warning: Could not load configuration file: {e}")
@@ -719,17 +797,405 @@ def categorize_with_subfolders(file_path: Path, extension_map: Dict, config: Dic
     
     return main_category, ""
 
+def configuration_wizard():
+    """Interactive configuration wizard for easy customization."""
+    print("\n🔧 Configuration Wizard")
+    print("=" * 40)
+    print("This wizard helps you customize AutoSort settings.")
+    print()
+    
+    config = load_config()
+    
+    while True:
+        print("Configuration Options:")
+        print("1. View current categories")
+        print("2. Add new category")
+        print("3. Edit existing category")
+        print("4. Manual update from defaults")
+        print("5. Reset to defaults")
+        print("6. Back to main menu")
+        print()
+        
+        try:
+            choice = input("Enter your choice (1-6): ").strip()
+            
+            if choice == "1":
+                view_categories(config)
+            elif choice == "2":
+                config = add_new_category(config)
+            elif choice == "3":
+                config = edit_category(config)
+            elif choice == "4":
+                config = manual_update_from_defaults(config)
+            elif choice == "5":
+                config = reset_to_defaults()
+            elif choice == "6":
+                save_config(config)
+                print("✅ Configuration saved!")
+                return
+            else:
+                print("Invalid choice. Please enter 1-6.")
+                
+        except KeyboardInterrupt:
+            print("\nConfiguration wizard cancelled.")
+            return
+        except Exception as e:
+            print(f"Error: {e}")
+
+def view_categories(config):
+    """Display current categories in a readable format."""
+    print("\n📋 Current Categories:")
+    print("-" * 50)
+    
+    # Show configuration status
+    auto_generated = config.get("metadata", {}).get("auto_generated", False)
+    version = config.get("metadata", {}).get("version", "unknown")
+    last_modified = config.get("metadata", {}).get("last_modified", "N/A")
+    
+    if auto_generated:
+        print(f"🔄 Auto-generated configuration (v{version})")
+        print("   Use 'Manual update from defaults' to get new categories/extensions")
+    else:
+        print(f"✏️  User-modified configuration (v{version})")
+        if last_modified != "N/A":
+            print(f"   Last modified: {last_modified}")
+        print("   Auto-updates disabled to preserve your customizations")
+    
+    print()
+    
+    categories = config.get("categories", {})
+    for i, (name, data) in enumerate(categories.items(), 1):
+        extensions = data.get("extensions", [])
+        folder_name = data.get("folder_name", name)
+        print(f"{i:2d}. {name}")
+        print(f"    📁 Folder: {folder_name}")
+        print(f"    📄 Extensions: {', '.join(extensions[:5])}{'...' if len(extensions) > 5 else ''}")
+        
+        # Show subcategories if they exist
+        subcategories = data.get("subcategories", {})
+        if subcategories:
+            print(f"    📂 Subcategories: {', '.join(subcategories.keys())}")
+        print()
+
+def add_new_category(config):
+    """Add a new category through interactive prompts."""
+    print("\n➕ Add New Category")
+    print("-" * 30)
+    
+    # Get category name
+    while True:
+        name = input("Category name (e.g., 'MyFiles'): ").strip()
+        if name and name not in config.get("categories", {}):
+            break
+        elif name in config.get("categories", {}):
+            print("❌ Category already exists!")
+        else:
+            print("❌ Please enter a valid name!")
+    
+    # Get folder name
+    folder_name = input(f"Folder name (default: {name}): ").strip()
+    if not folder_name:
+        folder_name = name
+    
+    # Get extensions
+    print("Enter file extensions (including the dot, e.g., .txt, .pdf)")
+    print("Press Enter twice when done:")
+    extensions = []
+    while True:
+        ext = input(f"Extension {len(extensions)+1}: ").strip()
+        if not ext:
+            break
+        if not ext.startswith('.'):
+            ext = '.' + ext
+        extensions.append(ext.lower())
+    
+    # Add to config
+    if "categories" not in config:
+        config["categories"] = {}
+    
+    config["categories"][name] = {
+        "extensions": extensions,
+        "folder_name": folder_name
+    }
+    
+    # Set auto_generated to false since user made changes
+    if "metadata" not in config:
+        config["metadata"] = {}
+    config["metadata"]["auto_generated"] = False
+    config["metadata"]["last_modified"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    print(f"✅ Added category '{name}' with {len(extensions)} extensions")
+    print("📝 Configuration marked as user-modified (auto-updates disabled)")
+    return config
+
+def edit_category(config):
+    """Edit an existing category."""
+    categories = list(config.get("categories", {}).keys())
+    
+    if not categories:
+        print("❌ No categories to edit!")
+        return config
+    
+    print("\n✏️  Edit Category")
+    print("-" * 20)
+    
+    # Show categories
+    for i, name in enumerate(categories, 1):
+        print(f"{i}. {name}")
+    
+    try:
+        choice = int(input(f"\nSelect category (1-{len(categories)}): ")) - 1
+        if 0 <= choice < len(categories):
+            category_name = categories[choice]
+            config = edit_specific_category(config, category_name)
+        else:
+            print("❌ Invalid selection!")
+    except ValueError:
+        print("❌ Please enter a number!")
+    
+    return config
+
+def edit_specific_category(config, category_name):
+    """Edit a specific category's properties."""
+    category = config["categories"][category_name]
+    
+    print(f"\n✏️  Editing '{category_name}'")
+    print("-" * 30)
+    
+    while True:
+        print(f"1. Change folder name (current: {category['folder_name']})")
+        print("2. Add extensions")
+        print("3. Remove extensions")
+        print("4. Back")
+        
+        choice = input("Enter choice (1-4): ").strip()
+        
+        if choice == "1":
+            new_name = input("New folder name: ").strip()
+            if new_name:
+                category["folder_name"] = new_name
+                # Set auto_generated to false since user made changes
+                if "metadata" not in config:
+                    config["metadata"] = {}
+                config["metadata"]["auto_generated"] = False
+                config["metadata"]["last_modified"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print("✅ Folder name updated!")
+                print("📝 Configuration marked as user-modified (auto-updates disabled)")
+        
+        elif choice == "2":
+            ext = input("Extension to add (including dot): ").strip()
+            if ext and not ext.startswith('.'):
+                ext = '.' + ext
+            if ext and ext not in category["extensions"]:
+                category["extensions"].append(ext.lower())
+                # Set auto_generated to false since user made changes
+                if "metadata" not in config:
+                    config["metadata"] = {}
+                config["metadata"]["auto_generated"] = False
+                config["metadata"]["last_modified"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print("✅ Extension added!")
+                print("📝 Configuration marked as user-modified (auto-updates disabled)")
+            else:
+                print("❌ Invalid or duplicate extension!")
+        
+        elif choice == "3":
+            extensions = category["extensions"]
+            if extensions:
+                print("Current extensions:")
+                for i, ext in enumerate(extensions, 1):
+                    print(f"  {i}. {ext}")
+                try:
+                    idx = int(input("Enter number to remove: ")) - 1
+                    if 0 <= idx < len(extensions):
+                        removed = extensions.pop(idx)
+                        # Set auto_generated to false since user made changes
+                        if "metadata" not in config:
+                            config["metadata"] = {}
+                        config["metadata"]["auto_generated"] = False
+                        config["metadata"]["last_modified"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        print(f"✅ Removed {removed}")
+                        print("📝 Configuration marked as user-modified (auto-updates disabled)")
+                    else:
+                        print("❌ Invalid selection!")
+                except ValueError:
+                    print("❌ Please enter a number!")
+            else:
+                print("❌ No extensions to remove!")
+        
+        elif choice == "4":
+            break
+    
+    return config
+
+def manual_update_from_defaults(config):
+    """Manually update configuration from defaults with conflict resolution."""
+    print("\n🔄 Manual Update from Defaults")
+    print("-" * 35)
+    print("This will merge new default categories and extensions with your current configuration.")
+    print("Conflicts will be resolved by keeping your customizations.")
+    print()
+    
+    # Check if config is already auto-generated
+    auto_generated = config.get("metadata", {}).get("auto_generated", False)
+    if auto_generated:
+        print("ℹ️  Your configuration is already auto-generated. No manual update needed.")
+        return config
+    
+    # Show what will be updated
+    default_categories = DEFAULT_CONFIG.get("categories", {})
+    current_categories = config.get("categories", {})
+    
+    new_categories = []
+    updated_categories = []
+    
+    for category_name, default_category in default_categories.items():
+        if category_name not in current_categories:
+            new_categories.append(category_name)
+        else:
+            # Check for new extensions
+            current_extensions = set(current_categories[category_name].get("extensions", []))
+            default_extensions = set(default_category.get("extensions", []))
+            new_extensions = default_extensions - current_extensions
+            if new_extensions:
+                updated_categories.append(f"{category_name} (+{len(new_extensions)} extensions)")
+    
+    if not new_categories and not updated_categories:
+        print("✅ Your configuration is up to date!")
+        return config
+    
+    print("📋 Changes that will be applied:")
+    if new_categories:
+        print(f"  New categories: {', '.join(new_categories)}")
+    if updated_categories:
+        print(f"  Updated categories: {', '.join(updated_categories)}")
+    
+    print()
+    confirm = input("Apply these updates? (y/N): ").strip().lower()
+    
+    if confirm in ['y', 'yes']:
+        # Perform the update
+        updated_config = update_config_with_defaults(config)
+        
+        # Keep auto_generated as false since this was a manual update
+        if "metadata" not in updated_config:
+            updated_config["metadata"] = {}
+        updated_config["metadata"]["auto_generated"] = False
+        updated_config["metadata"]["last_manual_update"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        print("✅ Manual update completed!")
+        print("📝 Configuration remains user-modified (auto-updates disabled)")
+        return updated_config
+    else:
+        print("❌ Manual update cancelled.")
+        return config
+
+def reset_to_defaults():
+    """Reset configuration to defaults."""
+    print("\n⚠️  Reset to Defaults")
+    print("-" * 25)
+    confirm = input("This will overwrite your current configuration. Continue? (y/N): ").strip().lower()
+    
+    if confirm in ['y', 'yes']:
+        print("✅ Configuration reset to defaults!")
+        print("🔄 Auto-updates re-enabled for default configuration")
+        return DEFAULT_CONFIG
+    else:
+        print("❌ Reset cancelled.")
+        return load_config()
+
+def analyze_files(files_to_process, extension_map, config):
+    """Analyze files and provide statistics before processing."""
+    print("\n📊 File Analysis")
+    print("-" * 30)
+    
+    # Count by category
+    category_counts = {}
+    category_sizes = {}
+    total_size = 0
+    
+    for item in files_to_process:
+        category, subfolder = categorize_with_subfolders(item, extension_map, config)
+        
+        # Count files
+        if category not in category_counts:
+            category_counts[category] = 0
+        category_counts[category] += 1
+        
+        # Calculate sizes
+        try:
+            size = item.stat().st_size
+            total_size += size
+            
+            if category not in category_sizes:
+                category_sizes[category] = 0
+            category_sizes[category] += size
+        except OSError:
+            pass  # Skip files we can't access
+    
+    # Display statistics
+    print(f"📁 Total files: {len(files_to_process)}")
+    print(f"💾 Total size: {format_size(total_size)}")
+    print()
+    
+    print("📋 Files by category:")
+    for category, count in sorted(category_counts.items(), key=lambda x: x[1], reverse=True):
+        size = category_sizes.get(category, 0)
+        print(f"  {category}: {count} files ({format_size(size)})")
+    
+    return category_counts, category_sizes
+
+def format_size(size_bytes):
+    """Format file size in human-readable format."""
+    if size_bytes == 0:
+        return "0 B"
+    
+    size_names = ["B", "KB", "MB", "GB", "TB"]
+    i = 0
+    while size_bytes >= 1024 and i < len(size_names) - 1:
+        size_bytes /= 1024.0
+        i += 1
+    
+    return f"{size_bytes:.1f} {size_names[i]}"
+
+def show_detailed_errors(error_log):
+    """Show detailed error information if any occurred."""
+    if not error_log:
+        return
+    
+    print("\n⚠️  Error Summary")
+    print("-" * 20)
+    
+    error_types = {}
+    for error in error_log:
+        error_type = type(error).__name__
+        if error_type not in error_types:
+            error_types[error_type] = []
+        error_types[error_type].append(str(error))
+    
+    for error_type, messages in error_types.items():
+        print(f"\n{error_type} ({len(messages)} occurrences):")
+        for msg in messages[:3]:  # Show first 3 examples
+            print(f"  • {msg}")
+        if len(messages) > 3:
+            print(f"  ... and {len(messages) - 3} more")
+
 def main():
     """Main function with improved error handling."""
     # Check dependencies first
     if not check_dependencies():
         sys.exit(1)
     
+    # Load configuration and check version before menu
+    print("📋 Loading configuration...")
+    config = load_config()
+    
     # Get source directory and target root from user
-    source_dir, target_root = get_source_directory()
+    source_dir, target_root, dry_run = get_source_directory()
     
     print(f"Source directory: {source_dir}")
     print(f"Target root: {target_root}")
+    if dry_run:
+        print("🔍 DRY RUN MODE - No files will be moved")
     
     # Check if source directory exists
     if not source_dir.exists():
@@ -740,66 +1206,99 @@ def main():
         print(f"Error: {source_dir} is not a directory")
         sys.exit(1)
     
-    # Load configuration
-    config = load_config()
+    # Get extension mapping from already loaded config
     extension_map = get_extension_mapping(config)
     
     # Display loaded categories
     categories = config.get("categories", {})
-    print(f"Loaded {len(categories)} categories from configuration")
+    print(f"✅ Loaded {len(categories)} categories from configuration")
     
     # Load ignore patterns
     patterns = load_ignore_patterns()
     if patterns:
-        print(f"Loaded {len(patterns)} ignore patterns")
+        print(f"🚫 Loaded {len(patterns)} ignore patterns")
+    
+    # Count files to process
+    print("🔍 Scanning files...")
+    files_to_process = []
+    for item in source_dir.iterdir():
+        if (item.is_file() and 
+            not should_ignore(item.name, patterns) and
+            item.name != 'autosort.py' and 
+            item.name != 'autosort_config.json' and 
+            item != target_root):
+            files_to_process.append(item)
+    
+    if not files_to_process:
+        print("✨ No files found to organize!")
+        return
+    
+    print(f"📁 Found {len(files_to_process)} files to organize")
     
     # Process files
     moved_count = 0
     error_count = 0
+    error_log = []
     
-    try:
-        for item in source_dir.iterdir():
-            try:
-                # Skip if not a file or should be ignored
-                if not item.is_file() or should_ignore(item.name, patterns):
-                    continue
-                
-                # Skip the script itself, config file, and the target directory
-                if (item.name == 'autosort.py' or 
-                    item.name == 'autosort_config.json' or 
-                    item == target_root):
-                    continue
-                
-                # Categorize with subfolder support
-                category, subfolder = categorize_with_subfolders(item, extension_map, config)
-                
-                # Create directory structure
+    # Show file analysis
+    if not dry_run:
+        analyze_files(files_to_process, extension_map, config)
+    
+    print("\n🔄 Starting organization...")
+    for i, item in enumerate(files_to_process, 1):
+        try:
+            # Show progress
+            progress = (i / len(files_to_process)) * 100
+            print(f"\r📊 Progress: {progress:.1f}% ({i}/{len(files_to_process)})", end="", flush=True)
+            
+            # Categorize with subfolder support
+            category, subfolder = categorize_with_subfolders(item, extension_map, config)
+            
+            # Create directory structure
+            if subfolder:
+                cat_dir = ensure_dir(target_root / category / subfolder)
+            else:
+                cat_dir = ensure_dir(target_root / category)
+            
+            dest = unique_path(cat_dir / item.name)
+            
+            if dry_run:
                 if subfolder:
-                    cat_dir = ensure_dir(target_root / category / subfolder)
+                    print(f"\n  📄 Would move '{item.name}' → '{category}/{subfolder}/'")
                 else:
-                    cat_dir = ensure_dir(target_root / category)
-                
-                dest = unique_path(cat_dir / item.name)
-                
+                    print(f"\n  📄 Would move '{item.name}' → '{category}/'")
+            else:
                 if safe_move_file(item, dest):
                     if subfolder:
-                        print(f"Moved '{item.name}' → '{category}/{subfolder}/'")
+                        print(f"\n  ✅ Moved '{item.name}' → '{category}/{subfolder}/'")
                     else:
-                        print(f"Moved '{item.name}' → '{category}/'")
+                        print(f"\n  ✅ Moved '{item.name}' → '{category}/'")
                     moved_count += 1
                 else:
+                    print(f"\n  ❌ Failed to move '{item.name}'")
                     error_count += 1
+                    error_log.append(f"Failed to move {item.name}")
                     
-            except Exception as e:
-                print(f"Error processing {item}: {e}")
-                error_count += 1
-                
-    except Exception as e:
-        print(f"Error iterating through source directory: {e}")
-        sys.exit(1)
+        except Exception as e:
+            print(f"\n  ⚠️  Error processing {item}: {e}")
+            error_count += 1
+            error_log.append(f"Error processing {item}: {e}")
+    
+    print()  # New line after progress
+    
+    # Show detailed errors if any
+    if error_log and not dry_run:
+        show_detailed_errors(error_log)
     
     # Summary
-    print(f"\nSummary: {moved_count} files moved, {error_count} errors")
+    if dry_run:
+        print(f"\n📋 Preview Summary: {len(files_to_process)} files would be organized")
+        print("💡 Run the script again and choose option 1 or 2 to actually move the files")
+    else:
+        print(f"\n🎉 Summary: {moved_count} files moved, {error_count} errors")
+        if moved_count > 0:
+            print(f"📁 Files organized in: {target_root}")
+            print("✨ Your files are now organized!")
 
 if __name__ == '__main__':
     main()

@@ -1,9 +1,9 @@
 {
       "metadata": {
-        "version": "1.13",
+        "version": "1.14",
         "auto_generated": false,
-        "last_updated": "2025-08-09",
-        "note": "This is a custom configuration example - set auto_generated to false to prevent automatic updates"
+        "last_updated": "2024-12-01",
+        "note": "This is a custom configuration example - auto-updates are now manual only"
     },
   "categories": {
     "Images": {

@@ -2,7 +2,19 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
-**Current Version**: 1.13 (August 2025)
+**Current Version**: 1.14 (December 2024)
+
+## What's New in v1.14 - Major EUX Improvements
+
+- **🎯 Dry Run Mode**: Preview what files will be moved before actually moving them
+- **🔧 Interactive Configuration Wizard**: Easy-to-use menu for customizing categories and settings
+- **🖥️ Graphical User Interface**: New GUI version for users who prefer visual interfaces
+- **📊 File Analysis & Statistics**: See detailed breakdown of files by category and size
+- **📈 Progress Indicators**: Real-time progress tracking with percentage completion
+- **🎨 Enhanced Visual Feedback**: Emojis and color-coded status messages
+- **⚠️ Better Error Reporting**: Detailed error summaries and troubleshooting information
+- **🔄 Improved User Flow**: Streamlined menus and clearer navigation
+- **🔒 Smart Configuration Management**: Manual updates with conflict resolution, auto-updates disabled for user modifications
 
 ## What's New in v1.13
 
@@ -13,28 +25,140 @@ A Python script that automatically organizes files into categorized folders. Can
 - **Design File Organization**: Groups design files (PSD, AI, EPS) separately from regular images
 - **RAW Photo Support**: Dedicated subfolder for RAW camera formats
 
-## What's New in v1.12
-
-- **Consolidated Audio Projects**: Merged Reaper files into the AudioProjects category for better organization
-- **Enhanced Audio Project Support**: Comprehensive coverage for FL Studio, Ableton Live, Audacity, Pro Tools, and Reaper
-
-## What's New in v1.11
-
-- **Flexible Source Selection**: Choose between Desktop or any custom folder via native folder picker
-- **25+ Comprehensive Categories**: Added specialized categories for creative professionals, developers, and power users
-- **Enhanced File Type Support**: Extended coverage for video projects, audio projects, 3D models, GIS data, and more
-- **Improved Organization**: Separated documents into specific categories (Spreadsheets, Presentations, etc.)
-- **Better Configuration Management**: Enhanced auto-update system with version tracking
-
 ## Features
 
 - **Flexible Source Selection**: Choose between organizing your Desktop or any custom folder
+- **Preview Mode**: See what will happen before moving any files (dry run)
+- **Interactive Configuration**: Easy-to-use wizard for customizing categories and settings
+- **Graphical Interface**: Both command-line and GUI versions available
 - **Automatic Categorization**: Files are sorted into categories based on their file extensions
 - **Configurable Categories**: Customize categories, file types, and folder names via JSON configuration
 - **Cross-platform Desktop Detection**: Works with different locale Desktop folder names (Desktop, Escritorio, Bureau, etc.)
 - **Safe File Handling**: Prevents overwriting files and handles naming conflicts
 - **Ignore Patterns**: Support for `.sortignore` file to exclude specific files
 - **Comprehensive File Types**: Supports images, audio, video, documents, code, archives, and more
+- **Progress Tracking**: Real-time progress indicators and detailed statistics
+- **Smart Image Organization**: Advanced image categorization with subfolders
+
+## Installation
+
+1. Clone or download this repository
+2. Ensure you have Python 3.6+ installed
+3. Install required dependencies:
+   
+   **Option A: Automatic Installation (macOS)**
+   ```bash
+   # Double-click install_dependencies.command
+   # OR run from terminal:
+   ./install_dependencies.command
+   ```
+   
+   **Option B: Manual Installation**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+## Usage
+
+### Command Line Interface
+```bash
+python3 autosort.py
+```
+
+The script will present you with a menu:
+1. **Organize Desktop** - Sort files from your Desktop folder
+2. **Organize Downloads** - Sort files from your Downloads folder
+3. **Select custom folder** - Choose any folder to organize using a folder selection dialog
+4. **Preview organization (dry run)** - See what would happen without moving files
+5. **Configuration wizard** - Customize categories and settings
+6. **Exit** - Quit the script
+
+### Graphical User Interface
+```bash
+python3 autosort_gui.py
+```
+
+Or double-click the `run-autosort-gui.command` file.
+
+The GUI provides:
+- **Visual folder selection** with browse button
+- **Quick access buttons** for Desktop and Downloads folders
+- **Preview mode checkbox** for safe testing
+- **Real-time progress bar** and status updates
+- **Detailed log window** showing all operations
+- **File analysis** with category breakdowns
+- **Easy start/stop controls**
+
+### macOS Double-Click
+- **Command Line**: Double-click `run-autosort.command`
+- **GUI**: Double-click `run-autosort-gui.command`
+
+## EUX Improvements
+
+### 🎯 Dry Run Mode
+The new preview mode lets you see exactly what files will be moved where before actually moving them:
+
+```
+📋 Preview Summary: 15 files would be organized
+💡 Run the script again and choose option 1 or 2 to actually move the files
+```
+
+This eliminates anxiety about losing files and helps users understand the organization process.
+
+### 🔧 Configuration Wizard
+The interactive configuration wizard makes it easy to customize AutoSort:
+
+- **View current categories** with file counts and sizes
+- **Add new categories** with custom extensions
+- **Edit existing categories** (rename folders, add/remove extensions)
+- **Toggle auto-updates** for configuration changes
+- **Reset to defaults** if needed
+
+### 📊 File Analysis & Statistics
+Before organizing, AutoSort shows detailed statistics:
+
+```
+📊 File Analysis
+------------------------------
+📁 Total files: 47
+💾 Total size: 2.3 GB
+
+📋 Files by category:
+  Images: 23 files (1.8 GB)
+  Documents: 12 files (156.2 MB)
+  Audio: 8 files (245.7 MB)
+  Video: 4 files (89.1 MB)
+```
+
+### 📈 Progress Tracking
+Real-time progress indicators show exactly what's happening:
+
+```
+📊 Progress: 45.2% (21/47)
+📄 Would move 'document.pdf' → 'Documents/'
+```
+
+### 🎨 Enhanced Visual Feedback
+Color-coded status messages and emojis make it easy to understand what's happening:
+
+- ✅ Success messages
+- ❌ Error messages  
+- ⚠️ Warning messages
+- 📋 Information messages
+- 🔄 Progress updates
+
+### ⚠️ Better Error Reporting
+Detailed error summaries help users troubleshoot issues:
+
+```
+⚠️ Error Summary
+--------------------
+
+PermissionError (3 occurrences):
+  • Failed to move important.pdf
+  • Failed to move project.zip
+  • Failed to move backup.db
+```
 
 ## Supported File Categories
 
@@ -84,50 +208,24 @@ The script supports **25+ categories** with comprehensive file type coverage:
 - **Sideloading**: IPA, DYLIB, XAPK, mobile provisioning files
 - **Subtitles**: SRT, SUB, IDX, SUBRIP, YTP, AEGISUB, SSA, ASS, VTT, TTML
 
-## Installation
-
-1. Clone or download this repository
-2. Ensure you have Python 3.6+ installed
-3. Install required dependencies:
-   
-   **Option A: Automatic Installation (macOS)**
-   ```bash
-   # Double-click install_dependencies.command
-   # OR run from terminal:
-   ./install_dependencies.command
-   ```
-   
-   **Option B: Manual Installation**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Usage
-
-### Command Line
-```bash
-python3 autosort.py
-```
-
-The script will prompt you to choose:
-1. **Organize Desktop** - Sort files from your Desktop folder
-2. **Select custom folder** - Choose any folder to organize using a folder selection dialog
-3. **Exit** - Quit the script
-
-### Folder Selection
-When you choose "Select custom folder", a native macOS folder picker dialog will open, allowing you to:
-- Navigate to any directory on your system
-- Select the folder you want to organize
-- The script will create an `Autosort` folder within your selected directory
-
-### macOS Double-Click
-Double-click the `run-autosort.command` file to execute the script.
-
 ## Configuration
+
+### Interactive Configuration Wizard
+
+The easiest way to customize AutoSort is through the interactive configuration wizard:
+
+1. Run `python3 autosort.py`
+2. Select "Configuration wizard" from the main menu
+3. Choose from the following options:
+   - **View current categories**: See all categories with file counts and configuration status
+   - **Add new category**: Create custom categories with specific extensions
+   - **Edit existing category**: Modify folder names and extensions
+   - **Manual update from defaults**: Merge new default categories/extensions with your customizations
+   - **Reset to defaults**: Restore default configuration (re-enables auto-updates)
 
 ### Custom Categories with autosort_config.json
 
-The script now uses a JSON configuration file (`autosort_config.json`) that allows you to customize categories, file extensions, and folder names without modifying the script.
+The script uses a JSON configuration file (`autosort_config.json`) that allows you to customize categories, file extensions, and folder names without modifying the script.
 
 #### Configuration File Structure
 
@@ -149,9 +247,9 @@ Each category has:
 ```json
 {
   "metadata": {
-    "version": "1.13",
+    "version": "1.14",
     "auto_generated": false,
-    "last_updated": "2025-08-09",
+    "last_updated": "2024-12-01",
     "note": "This is a custom configuration example"
   },
   "categories": {
@@ -175,9 +273,10 @@ See `example_custom_config.json` for a complete example with all available categ
 
 #### Adding New Categories
 
-1. Open `autosort_config.json` in a text editor
-2. Add a new category object with your desired extensions and folder name
-3. Save the file and run the script
+1. Use the **Configuration Wizard** (recommended)
+2. Or manually edit `autosort_config.json` in a text editor
+3. Add a new category object with your desired extensions and folder name
+4. Save the file and run the script
 
 #### Image Subfolder Configuration
 
@@ -219,27 +318,31 @@ You can:
 
 If no `autosort_config.json` file exists, the script will create one with **25+ default categories** including all the categories listed above. The default configuration is comprehensive and covers most common file types.
 
-#### Automatic Updates
+#### Smart Configuration Management
 
-The configuration file includes metadata that tracks whether it was auto-generated. When `auto_generated` is set to `true`, the script will automatically:
+The configuration system now uses intelligent management to preserve user customizations:
 
-- Add new default categories that don't exist in your configuration
-- Add new file extensions to existing default categories
-- Update the `last_auto_update` timestamp
+**User-Modified Configurations:**
+- When you make changes via the configuration wizard, `auto_generated` is automatically set to `false`
+- This prevents automatic updates from overwriting your customizations
+- Your changes are preserved and tracked with timestamps
 
-This ensures your configuration stays up-to-date with new features and file types without losing your custom categories.
+**Manual Updates:**
+- Use "Manual update from defaults" to merge new default categories/extensions with your customizations
+- Conflicts are resolved by keeping your customizations
+- The configuration remains user-modified after manual updates
 
-To prevent automatic updates, set `auto_generated` to `false` in the metadata section:
+**Reset to Defaults:**
+- Resetting to defaults sets `auto_generated` back to `true`
+- This re-enables automatic updates for the default configuration
 
-```json
-{
-  "metadata": {
-    "version": "1.0",
-    "auto_generated": false,
-    "last_updated": "2024-01-01"
-  }
-}
-```
+**Configuration Status:**
+- The wizard shows whether your configuration is auto-generated or user-modified
+- User-modified configurations show when they were last changed
+- Clear guidance on how to get updates while preserving customizations
+- **Version checking**: Automatically checks for updates from the remote configuration before showing the menu
+- **Update notifications**: Alerts users when newer configuration versions are available
+- **Smart version handling**: Handles unusual cases where local version might be newer than remote
 
 ### Ignoring Files with .sortignore
 
@@ -285,15 +388,19 @@ backup_*
 
 ## How It Works
 
-1. **Startup Menu**: The script prompts you to choose between Desktop organization or custom folder selection
-2. **Folder Selection**: If you choose custom folder, a native macOS folder picker dialog opens to let you pick any directory
-3. **Configuration Loading**: Loads the configuration from `autosort_config.json` (creates default if not exists)
-4. **Directory Creation**: Creates an `Autosort` folder in the selected directory
-5. **File Scanning**: Scans all files in the selected directory (excluding those in `.sortignore`)
-6. **Categorization**: Categorizes each file based on its extension using the configuration
-7. **Image Analysis**: For images, analyzes metadata and filename patterns for subfolder categorization
-8. **File Moving**: Moves files to appropriate subfolders within `Autosort` (with image subfolders when applicable)
-9. **Conflict Resolution**: Handles naming conflicts by appending numbers or timestamps
+1. **Startup Menu**: The script prompts you to choose between Desktop organization, custom folder selection, preview mode, or configuration wizard
+2. **Preview Mode**: Shows exactly what files will be moved where without actually moving them
+3. **Folder Selection**: If you choose custom folder, a native macOS folder picker dialog opens to let you pick any directory
+4. **Configuration Loading**: Loads the configuration from `autosort_config.json` (creates default if not exists)
+5. **File Analysis**: Analyzes files and shows statistics by category and size
+6. **Directory Creation**: Creates an `Autosort` folder in the selected directory
+7. **File Scanning**: Scans all files in the selected directory (excluding those in `.sortignore`)
+8. **Categorization**: Categorizes each file based on its extension using the configuration
+9. **Image Analysis**: For images, analyzes metadata and filename patterns for subfolder categorization
+10. **File Moving**: Moves files to appropriate subfolders within `Autosort` (with image subfolders when applicable)
+11. **Progress Tracking**: Shows real-time progress with percentage completion
+12. **Conflict Resolution**: Handles naming conflicts by appending numbers or timestamps
+13. **Error Reporting**: Provides detailed error summaries and troubleshooting information
 
 ### Image Subfolder Organization
 
@@ -309,21 +416,24 @@ Images are automatically organized into subfolders based on their characteristic
 
 ## Safety Features
 
+- **Preview Mode**: See what will happen before moving any files
 - **No Overwriting**: Files with duplicate names get unique names
 - **Permission Checks**: Verifies read/write permissions before moving files
 - **Error Handling**: Graceful handling of permission errors and file access issues
-- **Dry Run**: Consider testing on a small set of files first
+- **Detailed Logging**: Complete record of all operations and errors
+- **Progress Tracking**: Real-time feedback on operation progress
 
 ## Requirements
 
 - Python 3.6+ (with standard library modules)
 - macOS (for Desktop path detection and folder selection dialog)
 - Read/write permissions on the directory you want to organize
+- tkinter (for GUI version - usually included with Python)
 
 ### Dependencies
 
 The script uses Python standard library modules plus one external dependency:
-- **Standard Library**: `fnmatch`, `shutil`, `os`, `sys`, `json`, `pathlib`, `typing`, `subprocess`, `time`, `datetime`, `itertools`, `re`
+- **Standard Library**: `fnmatch`, `shutil`, `os`, `sys`, `json`, `pathlib`, `typing`, `subprocess`, `time`, `datetime`, `itertools`, `re`, `tkinter` (GUI)
 - **External**: `Pillow` (for image metadata analysis)
 
 The script automatically checks for all required dependencies on startup and will display helpful error messages if any are missing. If Pillow is not available, image subfolder categorization will be disabled but the script will continue to function normally.

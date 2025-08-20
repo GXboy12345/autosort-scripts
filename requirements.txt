@@ -1,1 +1,49 @@
-Pillow>=10.0.0
+# AutoSort - File Organizer Requirements
+# =====================================
+
+# Required dependencies
+# --------------------
+Pillow>=10.0.0  # For image metadata analysis and EXIF data extraction
+
+# Optional dependencies (usually included with Python)
+# --------------------------------------------------
+# tkinter - GUI framework (usually included with Python)
+# threading - Thread management (part of Python standard library)
+# queue - Thread-safe queues (part of Python standard library)
+# pathlib - Path manipulation (part of Python standard library)
+# json - JSON processing (part of Python standard library)
+# urllib.request - HTTP requests for configuration version checking (part of Python standard library)
+# os, sys, shutil, fnmatch, re, subprocess, time, datetime, itertools - Standard library modules
+
+# Installation notes:
+# - Pillow is the only external dependency that needs to be installed
+# - All other dependencies are part of Python's standard library
+# - tkinter is included with most Python installations but may be missing on some Linux systems
+# - If tkinter is not available, the GUI version (autosort_gui.py) will not work
+# - The command-line version (autosort.py) will work regardless of tkinter availability
+
+# Common tkinter issues and solutions:
+# -----------------------------------
+# macOS (Homebrew Python): 
+#   - Homebrew Python doesn't include tkinter by default
+#   - Solution: brew install python-tk@3.13 (or your Python version)
+#   - Alternative: Use Python from python.org which includes tkinter
+#
+# Linux (Ubuntu/Debian):
+#   - sudo apt-get install python3-tk
+#
+# Linux (CentOS/RHEL/Fedora):
+#   - sudo yum install tkinter
+#   - or sudo dnf install python3-tkinter
+#
+# Windows:
+#   - tkinter is usually included with Python installations
+
+# To check if tkinter is available:
+# python3 -c "import tkinter; print('tkinter is available')"
+
+# To install only the required dependency:
+# pip install Pillow>=10.0.0
+
+# To install all dependencies (including optional ones):
+# pip install -r requirements.txt
