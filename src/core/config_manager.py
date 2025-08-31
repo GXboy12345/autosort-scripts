@@ -692,10 +692,6 @@ class ConfigManager:
                         }
                     }
                 },
-                "Minecraft": {
-                    "extensions": [".jar", ".schem", ".schematic", ".litematic", ".litematica", ".nbt", ".mcfunction"],
-                    "folder_name": "Minecraft"
-                },
                 "NonMac": {
                     "extensions": [".exe", ".msi", ".dll", ".com", ".bat", ".cmd", ".sys", ".appimage", ".scr", ".rpm", ".cab", ".pkg"],
                     "folder_name": "Non-Mac Files"
@@ -795,12 +791,16 @@ class ConfigManager:
                     "folder_name": "Calendars"
                 },
                 "GameFiles": {
-                    "extensions": [".osr", ".osz", ".osk", ".osu"],
+                    "extensions": [".osr", ".osz", ".osk", ".osu", ".jar", ".schem", ".schematic", ".litematic", ".litematica", ".nbt", ".mcfunction"],
                     "folder_name": "Game Files",
                     "subcategories": {
                         "Osu": {
                             "extensions": [".osr", ".osz", ".osk", ".osu"],
                             "folder_name": "Osu"
+                        },
+                        "Minecraft": {
+                            "extensions": [".jar", ".schem", ".schematic", ".litematic", ".litematica", ".nbt", ".mcfunction"],
+                            "folder_name": "Minecraft"
                         }
                     }
                 },

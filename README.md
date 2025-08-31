@@ -8,30 +8,10 @@ A Python script that automatically organizes files into categorized folders. Can
 
 - **Email Organization**: New Emails category for .eml, .msg, .emlx, and .oft files
 - **Calendar Files**: New Calendars category for .ics, .ical, .ifb, and .vcs files
-- **Game Files Enhancement**: New Game Files category with Osu subcategory for osu! game files (.osr, .osz, .osk, .osu)
+- **Game Files Enhancement**: New Game Files category with Osu and Minecraft subcategories for organized gaming file management
 - **Music Scores Expansion**: Added Guitar Pro formats (.gp, .gp3, .gp4, .gp5, .gpx, .gp7) and MusicXML (.musicxml, .mxl) support
-- **Minecraft Support**: Added .litematica file support (distinct from .litematic)
+- **Minecraft Reorganization**: Minecraft files now organized under Game Files/Minecraft with .litematica support
 - **Extensionless Files**: New category for files without extensions with intelligent handling
-
-## What's New in v2.1
-
-- **Enhanced Subcategories**: Comprehensive subcategory system for better file organization
-- **Smart Audio Organization**: Music, podcasts, voice recordings, sound effects, and audiobooks
-- **Video Categorization**: Movies, TV shows, tutorials, screen recordings, and home videos
-- **Code Language Groups**: Python, JavaScript, Web, Scripts, Mobile, and Data Science
-- **Document Types**: PDFs, Word documents, Pages documents, and scanned documents
-- **Archive Management**: Compressed files, tarballs, backups, and downloads
-- **Text Organization**: Markdown, logs, data files, config files, and notes
-- **3D Model Types**: Print-ready, CAD models, game assets, Blender files, and scanned models
-
-## What's New in v2.0
-
-- **Modern Interface**: Clean CLI with real-time progress
-- **Undo System**: Complete undo functionality with persistent history
-- **Modular Architecture**: Clean, maintainable code structure
-- **Enhanced Safety**: Better error handling and file operation safety
-- **Smart Progress**: Real-time progress tracking with detailed feedback
-- **Configuration Wizard**: Interactive configuration management with category editing
 
 ## Features
 
@@ -239,9 +219,9 @@ The script supports **29+ categories** with comprehensive file type coverage and
 - **Calendars**: ICS, ICAL, IFB, VCS
 
 ### Gaming & Entertainment
-- **Minecraft**: JAR, SCHEM/SCHEMATIC, LITEMATIC, LITEMATICA, NBT, MCFUNCTION
 - **GameFiles**: Game saves, configurations, and specialized game files
   - **Osu**: osu! game files (.osr, .osz, .osk, .osu)
+  - **Minecraft**: JAR, SCHEM/SCHEMATIC, LITEMATIC, LITEMATICA, NBT, MCFUNCTION
 
 ### Other Specialized Categories
 - **eBooks**: EPUB, MOBI, AZW, AZW3, FB2

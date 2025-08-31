@@ -342,18 +342,22 @@ class FileOrganizer:
         # Get main category
         category = extension_map.get(extension, "Miscellaneous")
         
+        logger.debug(f"Categorizing {file_path.name} (ext: {extension}) → category: {category}")
+        
         # Get subcategory using configuration-based system
         subcategory = self._categorize_subcategory(file_path, category)
         
+        logger.debug(f"Final result: {file_path.name} → category: {category}, subcategory: {subcategory}")
+        
         return category, subcategory
     
-    def _categorize_subcategory(self, file_path: Path, category: str) -> str:
+    def _categorize_subcategory(self, file_path: Path, category_folder_name: str) -> str:
         """
         Categorize a file into a subcategory based on configuration.
         
         Args:
             file_path: File path to categorize
-            category: Main category name
+            category_folder_name: Main category folder name (e.g., "Game Files")
             
         Returns:
             Subcategory name or empty string if no subcategory
@@ -361,18 +365,35 @@ class FileOrganizer:
         try:
             # Get category configuration
             categories = self.config_manager.get_categories()
-            if category not in categories:
+            
+            # Find the category key that matches the folder name
+            category_key = None
+            for key, cat_config in categories.items():
+                if cat_config.folder_name == category_folder_name:
+                    category_key = key
+                    break
+            
+            if not category_key:
+                logger.debug(f"No category key found for folder name '{category_folder_name}'")
                 return ""
             
-            category_config = categories[category]
+            category_config = categories[category_key]
             if not hasattr(category_config, 'subcategories') or not category_config.subcategories:
+                logger.debug(f"Category '{category_key}' has no subcategories")
                 return ""
+            
+            logger.debug(f"Checking subcategories for {file_path.name} in category '{category_key}' (folder: '{category_folder_name}'): {list(category_config.subcategories.keys())}")
             
             # Check subcategories in priority order: extensions -> patterns -> exif
             for subcategory_name, subcategory_config in category_config.subcategories.items():
+                logger.debug(f"Checking subcategory '{subcategory_name}' with extensions: {subcategory_config.extensions}")
                 if self._matches_subcategory(file_path, subcategory_config):
+                    logger.debug(f"File {file_path.name} matches subcategory '{subcategory_name}' -> '{subcategory_config.folder_name}'")
                     return subcategory_config.folder_name
+                else:
+                    logger.debug(f"File {file_path.name} does NOT match subcategory '{subcategory_name}'")
             
+            logger.debug(f"No subcategory match found for {file_path.name}")
             return ""
             
         except Exception as e:
@@ -390,22 +411,37 @@ class FileOrganizer:
         Returns:
             True if file matches subcategory
         """
+        file_ext = file_path.suffix.lower()
+        logger.debug(f"Checking if {file_path.name} (ext: '{file_ext}') matches subcategory config")
+        
         # Check extensions first (highest priority)
         if hasattr(subcategory_config, 'extensions') and subcategory_config.extensions:
-            if file_path.suffix.lower() in [ext.lower() for ext in subcategory_config.extensions]:
+            config_extensions = [ext.lower() for ext in subcategory_config.extensions]
+            logger.debug(f"Subcategory extensions: {config_extensions}")
+            if file_ext in config_extensions:
+                logger.debug(f"Extension match found: {file_ext} in {config_extensions}")
                 return True
+            else:
+                logger.debug(f"Extension {file_ext} NOT in {config_extensions}")
+        else:
+            logger.debug(f"No extensions defined for this subcategory")
         
         # Check patterns second
         if hasattr(subcategory_config, 'patterns') and subcategory_config.patterns:
+            logger.debug(f"Checking patterns: {subcategory_config.patterns}")
             for pattern in subcategory_config.patterns:
                 if self._matches_pattern(file_path.name, pattern):
+                    logger.debug(f"Pattern match found: {file_path.name} matches {pattern}")
                     return True
         
         # Check EXIF indicators third (only for images)
         if hasattr(subcategory_config, 'exif_indicators') and subcategory_config.exif_indicators:
+            logger.debug(f"Checking EXIF indicators: {subcategory_config.exif_indicators}")
             if self._matches_exif_indicators(file_path, subcategory_config.exif_indicators):
+                logger.debug(f"EXIF match found for {file_path.name}")
                 return True
         
+        logger.debug(f"No match found for {file_path.name}")
         return False
     
     def _matches_pattern(self, filename: str, pattern: str) -> bool:
