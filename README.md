@@ -2,7 +2,16 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
-**Current Version**: 2.1 (2025-08-20)
+**Current Version**: 2.2 (2025-08-31)
+
+## What's New in v2.2
+
+- **Email Organization**: New Emails category for .eml, .msg, .emlx, and .oft files
+- **Calendar Files**: New Calendars category for .ics, .ical, .ifb, and .vcs files
+- **Game Files Enhancement**: New Game Files category with Osu subcategory for osu! game files (.osr, .osz, .osk, .osu)
+- **Music Scores Expansion**: Added Guitar Pro formats (.gp, .gp3, .gp4, .gp5, .gpx, .gp7) and MusicXML (.musicxml, .mxl) support
+- **Minecraft Support**: Added .litematica file support (distinct from .litematic)
+- **Extensionless Files**: New category for files without extensions with intelligent handling
 
 ## What's New in v2.1
 
@@ -162,7 +171,7 @@ Continue? (y/N): y
 
 ## Supported File Categories
 
-The script supports **26+ categories** with comprehensive file type coverage and intelligent subcategorization:
+The script supports **29+ categories** with comprehensive file type coverage and intelligent subcategorization:
 
 ### Core Media Categories
 - **Images**: JPG, JPEG 2000 (JP2, J2K, JPF, JPX), PNG, GIF, BMP, TIFF/TIF, HEIC, RAW formats (CR2, NEF, ARW, ORF, DNG), SVG, WebP, AVIF, JXL, PSD, AI, EPS, ICO, ICNS, TGA
@@ -223,10 +232,18 @@ The script supports **26+ categories** with comprehensive file type coverage and
   - **Game Assets**: FBX, GLB, GLTF files for game development
   - **Blender Files**: BLEND files for Blender projects
   - **Scanned Models**: 3D scanned model files
-- **MusicScores**: MuseScore (.mscz/.mscx)
+- **MusicScores**: MuseScore (.mscz/.mscx), Guitar Pro (.gp/.gp3/.gp4/.gp5/.gpx/.gp7), MusicXML (.musicxml/.mxl)
 
-### Specialized Categories
-- **Minecraft**: JAR, SCHEM/SCHEMATIC, LITEMATIC, NBT, MCFUNCTION
+### Communication & Organization
+- **Emails**: EML, MSG, EMLX, OFT
+- **Calendars**: ICS, ICAL, IFB, VCS
+
+### Gaming & Entertainment
+- **Minecraft**: JAR, SCHEM/SCHEMATIC, LITEMATIC, LITEMATICA, NBT, MCFUNCTION
+- **GameFiles**: Game saves, configurations, and specialized game files
+  - **Osu**: osu! game files (.osr, .osz, .osk, .osu)
+
+### Other Specialized Categories
 - **eBooks**: EPUB, MOBI, AZW, AZW3, FB2
 - **Fonts**: TTF, OTF, WOFF, WOFF2, FNT
 - **Contact files**: VCF, VCARD
@@ -236,6 +253,7 @@ The script supports **26+ categories** with comprehensive file type coverage and
 - **Torrents**: TORRENT
 - **Sideloading**: IPA, DYLIB, XAPK, mobile provisioning files
 - **Subtitles**: SRT, SUB, IDX, SUBRIP, YTP, AEGISUB, SSA, ASS, VTT, TTML
+- **Extensionless**: Files without file extensions
 
 ## Configuration
 
@@ -277,9 +295,9 @@ Each category has:
 ```json
 {
   "metadata": {
-    "version": "2.1",
+    "version": "2.2",
     "auto_generated": false,
-    "last_updated": "2025-08-20",
+    "last_updated": "2025-08-31",
     "note": "This is a custom configuration example - auto-updates are now manual only"
   },
   "categories": {
@@ -342,7 +360,7 @@ You can:
 
 #### Default Configuration
 
-If no `autosort_config.json` file exists, the script will create one with **26 default categories** including all the categories listed above. The default configuration is comprehensive and covers most common file types.
+If no `autosort_config.json` file exists, the script will create one with **29+ default categories** including all the categories listed above. The default configuration is comprehensive and covers most common file types.
 
 #### Smart Configuration Management
 

@@ -501,9 +501,9 @@ class ConfigManager:
         """
         return {
             "metadata": {
-                "version": "2.1",
+                "version": "2.2",
                 "auto_generated": True,
-                "last_updated": "2025-08-20",
+                "last_updated": "2025-08-31",
                 "note": "This is the default configuration"
             },
             "categories": {
@@ -693,7 +693,7 @@ class ConfigManager:
                     }
                 },
                 "Minecraft": {
-                    "extensions": [".jar", ".schem", ".schematic", ".litematic", ".nbt", ".mcfunction"],
+                    "extensions": [".jar", ".schem", ".schematic", ".litematic", ".litematica", ".nbt", ".mcfunction"],
                     "folder_name": "Minecraft"
                 },
                 "NonMac": {
@@ -705,7 +705,7 @@ class ConfigManager:
                     "folder_name": "Disk Images"
                 },
                 "MusicScores": {
-                    "extensions": [".mscz", ".mscx", ".mscx.gz", ".mscx.bz2", ".mscx.xz", ".mscx.tar", ".mscx.tar.gz", ".mscx.tar.bz2", ".mscx.tar.xz"],
+                    "extensions": [".mscz", ".mscx", ".mscx.gz", ".mscx.bz2", ".mscx.xz", ".mscx.tar", ".mscx.tar.gz", ".mscx.tar.bz2", ".mscx.tar.xz", ".gp", ".gp3", ".gp4", ".gp5", ".gpx", ".gp7", ".musicxml", ".mxl"],
                     "folder_name": "Music Scores"
                 },
                 "3DModels": {
@@ -786,7 +786,28 @@ class ConfigManager:
                     "extensions": [".srt", ".sub", ".idx", ".subrip", ".subrip.gz", ".subrip.bz2", ".subrip.xz", ".subrip.tar", ".subrip.tar.gz", ".subrip.tar.bz2", ".subrip.tar.xz", ".srt.gz", ".srt.bz2", ".srt.xz", ".srt.tar", ".srt.tar.gz", ".srt.tar.bz2", ".srt.tar.xz", ".ytp", ".aegisub", ".ssa", ".ass", ".vtt", ".ttml", ".ttml.gz", ".ttml.bz2", ".ttml.xz", ".ttml.tar", ".ttml.tar.gz", ".ttml.tar.bz2", ".ttml.tar.xz"],
                     "folder_name": "Subtitles"
                 },
-
+                "Emails": {
+                    "extensions": [".eml", ".msg", ".emlx", ".oft"],
+                    "folder_name": "Emails"
+                },
+                "Calendars": {
+                    "extensions": [".ics", ".ical", ".ifb", ".vcs"],
+                    "folder_name": "Calendars"
+                },
+                "GameFiles": {
+                    "extensions": [".osr", ".osz", ".osk", ".osu"],
+                    "folder_name": "Game Files",
+                    "subcategories": {
+                        "Osu": {
+                            "extensions": [".osr", ".osz", ".osk", ".osu"],
+                            "folder_name": "Osu"
+                        }
+                    }
+                },
+                "Extensionless": {
+                    "extensions": [""],
+                    "folder_name": "Extensionless"
+                },
                 "Miscellaneous": {
                     "extensions": [],
                     "folder_name": "Miscellaneous"
