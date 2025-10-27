@@ -28,7 +28,7 @@ from core.path_manager import PathManager
 from ui.cli_interface import CLIInterface
 from ui.gui_interface import GUIInterface
 from utils.logger import setup_logging
-
+from utils.analytics import get_analytics, request_analytics_consent
 from utils.undo_manager import UndoManager
 
 class AutoSortApp:
@@ -54,6 +54,9 @@ class AutoSortApp:
         self.path_manager = PathManager()
         self.undo_manager = UndoManager()
         self.file_organizer = FileOrganizer(self.config_manager, self.path_manager, self.undo_manager)
+        
+        # Check analytics consent
+        self._check_analytics_consent()
         
         # Initialize UI
         if use_gui:
@@ -100,6 +103,21 @@ class AutoSortApp:
             return 1
         finally:
             self.logger.info("AutoSort application finished")
+    
+    def _check_analytics_consent(self) -> None:
+        """Check and request analytics consent if needed."""
+        try:
+            analytics = get_analytics()
+            consent_status = analytics.get_consent_status()
+            
+            # Only request consent if not already given
+            if not consent_status["enabled"] and not consent_status["consent_date"]:
+                # Only ask once per session to avoid being annoying
+                if not hasattr(self, '_analytics_asked'):
+                    self._analytics_asked = True
+                    request_analytics_consent()
+        except Exception as e:
+            self.logger.debug(f"Analytics consent check failed: {e}")
     
     def _check_dependencies(self) -> bool:
         """

@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from enum import Enum
 import time
 
+from ..utils.analytics import get_analytics, report_unhandled_file_type
+
 logger = logging.getLogger(__name__)
 
 
@@ -342,6 +344,12 @@ class FileOrganizer:
         # Get main category
         category = extension_map.get(extension, "Miscellaneous")
         
+        # Report unhandled file types for analytics
+        if category == "Miscellaneous" and extension:
+            # Determine context based on file characteristics
+            context = self._determine_file_context(file_path, extension)
+            report_unhandled_file_type(extension, context)
+        
         logger.debug(f"Categorizing {file_path.name} (ext: {extension}) → category: {category}")
         
         # Get subcategory using configuration-based system
@@ -350,6 +358,42 @@ class FileOrganizer:
         logger.debug(f"Final result: {file_path.name} → category: {category}, subcategory: {subcategory}")
         
         return category, subcategory
+    
+    def _determine_file_context(self, file_path: Path, extension: str) -> str:
+        """
+        Determine file context for analytics reporting.
+        
+        Args:
+            file_path: Path to the file
+            extension: File extension
+            
+        Returns:
+            Context string for analytics
+        """
+        try:
+            # Basic context determination based on extension patterns
+            if extension in ['.txt', '.md', '.rtf', '.doc', '.docx', '.pdf']:
+                return "document"
+            elif extension in ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.svg']:
+                return "image"
+            elif extension in ['.mp3', '.wav', '.flac', '.aac', '.m4a']:
+                return "audio"
+            elif extension in ['.mp4', '.avi', '.mov', '.mkv', '.flv']:
+                return "video"
+            elif extension in ['.py', '.js', '.html', '.css', '.java', '.cpp']:
+                return "code"
+            elif extension in ['.zip', '.rar', '.7z', '.tar', '.gz']:
+                return "archive"
+            elif extension in ['.exe', '.msi', '.dmg', '.pkg']:
+                return "executable"
+            elif extension in ['.db', '.sqlite', '.sql']:
+                return "database"
+            elif extension in ['.json', '.xml', '.yaml', '.csv']:
+                return "data"
+            else:
+                return "unknown"
+        except Exception:
+            return "unknown"
     
     def _categorize_subcategory(self, file_path: Path, category_folder_name: str) -> str:
         """
