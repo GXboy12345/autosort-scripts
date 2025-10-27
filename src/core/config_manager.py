@@ -11,10 +11,93 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 import urllib.request
+import shutil
+import subprocess
 from dataclasses import dataclass, asdict
 from enum import Enum
 
 logger = logging.getLogger(__name__)
+
+
+class ConfigMigrator:
+    """Handles configuration migrations between versions."""
+    
+    def __init__(self):
+        self.migrations = {
+            "2.1": self._migrate_2_1_to_2_2,
+            "2.2": self._migrate_2_2_to_2_3,
+        }
+    
+    def migrate_config(self, config: Dict, from_version: str, to_version: str) -> Dict:
+        """Apply migration steps between versions."""
+        current_version = from_version
+        migrated_config = config.copy()
+        
+        while self._is_version_newer(to_version, current_version):
+            next_version = self._get_next_version(current_version)
+            if next_version in self.migrations:
+                logger.info(f"Migrating config from {current_version} to {next_version}")
+                migrated_config = self.migrations[next_version](migrated_config)
+            current_version = next_version
+            
+        return migrated_config
+    
+    def _get_next_version(self, current_version: str) -> str:
+        """Get the next version in the migration chain."""
+        version_map = {
+            "2.1": "2.2",
+            "2.2": "2.3",
+        }
+        return version_map.get(current_version, current_version)
+    
+    def _is_version_newer(self, version1: str, version2: str) -> bool:
+        """Check if version1 is newer than version2."""
+        from itertools import zip_longest
+        
+        def parse(v: str):
+            return [int(part) for part in v.split('.') if part.isdigit()]
+        
+        v1 = parse(version1)
+        v2 = parse(version2)
+        
+        for a, b in zip_longest(v1, v2, fillvalue=0):
+            if a > b:
+                return True
+            if a < b:
+                return False
+        return False
+    
+    def _migrate_2_1_to_2_2(self, config: Dict) -> Dict:
+        """Migrate from version 2.1 to 2.2."""
+        # Update metadata
+        if "metadata" not in config:
+            config["metadata"] = {}
+        
+        config["metadata"]["version"] = "2.2"
+        config["metadata"]["last_updated"] = "2025-08-31"
+        
+        # Add any new categories or extensions introduced in 2.2
+        categories = config.get("categories", {})
+        
+        # Ensure Theater technology category exists
+        if "TheaterTechnology" not in categories:
+            categories["TheaterTechnology"] = {
+                "extensions": [".tmix", ".qlab4"],
+                "folder_name": "Theater Technology"
+            }
+        
+        return config
+    
+    def _migrate_2_2_to_2_3(self, config: Dict) -> Dict:
+        """Migrate from version 2.2 to 2.3."""
+        # Update metadata
+        if "metadata" not in config:
+            config["metadata"] = {}
+        
+        config["metadata"]["version"] = "2.3"
+        config["metadata"]["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+        
+        return config
 
 
 class ConfigStatus(Enum):
@@ -86,6 +169,9 @@ class ConfigManager:
         
         # Default configuration
         self._default_config = self._create_default_config()
+        
+        # Migration system
+        self.migrator = ConfigMigrator()
     
     def load_config(self) -> bool:
         """
@@ -100,6 +186,15 @@ class ConfigManager:
                     self.config = json.load(f)
                 
                 if self._validate_config():
+                    # Check if migration is needed
+                    migrated_config = self._migrate_user_config(self.config)
+                    if migrated_config != self.config:
+                        self.config = migrated_config
+                        if self.save_config():
+                            print("✅ Configuration migrated successfully")
+                        else:
+                            print("❌ Failed to save migrated configuration")
+                    
                     self.status = ConfigStatus.LOADED
                     logger.info(f"Configuration loaded from {self.config_path}")
                     
@@ -501,9 +596,9 @@ class ConfigManager:
         """
         return {
             "metadata": {
-                "version": "2.2",
+                "version": "2.3",
                 "auto_generated": True,
-                "last_updated": "2025-08-31",
+                "last_updated": "2025-01-27",
                 "note": "This is the default configuration"
             },
             "categories": {
@@ -808,6 +903,10 @@ class ConfigManager:
                     "extensions": [""],
                     "folder_name": "Extensionless"
                 },
+                "TheaterTechnology": {
+                    "extensions": [".tmix", ".qlab4"],
+                    "folder_name": "Theater Technology"
+                },
                 "Miscellaneous": {
                     "extensions": [],
                     "folder_name": "Miscellaneous"
@@ -884,3 +983,109 @@ class ConfigManager:
         updated_config["metadata"]["last_updated"] = self._default_config.get("metadata", {}).get("last_updated", "2025-08-20")
         
         return updated_config
+    
+    def _backup_config(self) -> str:
+        """Create timestamped backup of current config."""
+        if not self.config_path.exists():
+            return ""
+        
+        backup_path = f"autosort_config_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        try:
+            shutil.copy2(self.config_path, backup_path)
+            logger.info(f"Configuration backed up to {backup_path}")
+            return backup_path
+        except Exception as e:
+            logger.error(f"Failed to backup configuration: {e}")
+            return ""
+    
+    def _rollback_config(self, backup_path: str) -> bool:
+        """Restore config from backup."""
+        try:
+            shutil.copy2(backup_path, self.config_path)
+            logger.info(f"Configuration restored from {backup_path}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to rollback configuration: {e}")
+            return False
+    
+    def _migrate_user_config(self, config: Dict) -> Dict:
+        """Migrate user config to latest version."""
+        current_version = config.get("metadata", {}).get("version", "1.0")
+        latest_version = self._default_config.get("metadata", {}).get("version", "2.2")
+        
+        if self.migrator._is_version_newer(latest_version, current_version):
+            # Create backup before migration
+            backup_path = self._backup_config()
+            
+            try:
+                # Apply migrations
+                migrated_config = self.migrator.migrate_config(config, current_version, latest_version)
+                
+                # Validate migrated config
+                issues = self._validate_config_compatibility(migrated_config)
+                if issues:
+                    print("⚠️  Migration issues detected:")
+                    for issue in issues:
+                        print(f"   - {issue}")
+                    
+                    # For now, continue with migration but log issues
+                    logger.warning(f"Migration issues: {issues}")
+                
+                return migrated_config
+                
+            except Exception as e:
+                logger.error(f"Migration failed: {e}")
+                # Restore from backup if migration fails
+                if backup_path:
+                    self._rollback_config(backup_path)
+                return config
+        
+        return config
+    
+    def _validate_config_compatibility(self, config: Dict) -> List[str]:
+        """Validate config compatibility and return issues."""
+        issues = []
+        
+        # Check for required fields
+        if "metadata" not in config:
+            issues.append("Missing metadata section")
+        else:
+            metadata = config["metadata"]
+            if "version" not in metadata:
+                issues.append("Missing version in metadata")
+        
+        if "categories" not in config:
+            issues.append("Missing categories section")
+        
+        # Check for deprecated patterns (example)
+        # if "old_field" in config:
+        #     issues.append("Field 'old_field' is deprecated, use 'new_field'")
+        
+        return issues
+    
+    def _check_git_updates(self) -> bool:
+        """Check if git repository has updates available."""
+        try:
+            result = subprocess.run(['git', 'fetch'], capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                # Check if local branch is behind remote
+                result = subprocess.run(['git', 'status', '-uno'], capture_output=True, text=True, timeout=5)
+                return "behind" in result.stdout
+        except Exception as e:
+            logger.debug(f"Git check failed: {e}")
+        return False
+    
+    def _show_update_options(self, current_version: str, new_version: str) -> str:
+        """Show user-friendly update options."""
+        print(f"🔄 Configuration update available: {current_version} → {new_version}")
+        print("Options:")
+        print("1. Auto-update (preserves customizations)")
+        print("2. Manual update (git pull required)")
+        print("3. Skip this update")
+        print("4. View changelog")
+        
+        try:
+            choice = input("Choose option (1-4): ").strip()
+            return choice
+        except (EOFError, KeyboardInterrupt):
+            return "3"  # Skip by default

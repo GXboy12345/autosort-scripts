@@ -1,8 +1,8 @@
 {
       "metadata": {
-        "version": "2.2",
+        "version": "2.3",
         "auto_generated": false,
-        "last_updated": "2025-08-31",
+        "last_updated": "2025-01-27",
         "note": "This is a custom configuration example - auto-updates are now manual only"
     },
   "categories": {
@@ -293,6 +293,10 @@
     "Extensionless": {
       "extensions": [""],
       "folder_name": "Extensionless"
+    },
+    "TheaterTechnology": {
+      "extensions": [".tmix", ".qlab4"],
+      "folder_name": "Theater Technology"
     },
     "Miscellaneous": {
       "extensions": [],

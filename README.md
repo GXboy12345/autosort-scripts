@@ -2,7 +2,14 @@
 
 A Python script that automatically organizes files into categorized folders. Can organize your Desktop or any custom folder you select.
 
-**Current Version**: 2.2 (2025-08-31)
+**Current Version**: 2.3 (2025-01-27)
+
+## What's New in v2.3
+
+- **Theater Technology**: New category for theater production files (.tmix, .qlab4)
+- **Enhanced Configuration Management**: Improved migration system with automatic backup and rollback capabilities
+- **Smart Update Notifications**: Better user experience with clear update options and git integration
+- **Configuration Validation**: Comprehensive validation system for configuration compatibility
 
 ## What's New in v2.2
 
@@ -151,7 +158,7 @@ Continue? (y/N): y
 
 ## Supported File Categories
 
-The script supports **29+ categories** with comprehensive file type coverage and intelligent subcategorization:
+The script supports **30+ categories** with comprehensive file type coverage and intelligent subcategorization:
 
 ### Core Media Categories
 - **Images**: JPG, JPEG 2000 (JP2, J2K, JPF, JPX), PNG, GIF, BMP, TIFF/TIF, HEIC, RAW formats (CR2, NEF, ARW, ORF, DNG), SVG, WebP, AVIF, JXL, PSD, AI, EPS, ICO, ICNS, TGA
@@ -217,6 +224,7 @@ The script supports **29+ categories** with comprehensive file type coverage and
 ### Communication & Organization
 - **Emails**: EML, MSG, EMLX, OFT
 - **Calendars**: ICS, ICAL, IFB, VCS
+- **Theater Technology**: TMIX, QLAB4
 
 ### Gaming & Entertainment
 - **GameFiles**: Game saves, configurations, and specialized game files
