@@ -26,7 +26,7 @@ def _load_bundled_defaults() -> Dict[str, Any]:
         ref = resources.files("autosort.data").joinpath("default_config.json")
         return json.loads(ref.read_text(encoding="utf-8"))
     except Exception:
-        return {"metadata": {"version": "3.0", "auto_generated": True}, "categories": {}}
+        return {"metadata": {"version": "3.1", "auto_generated": True}, "categories": {}}
 
 
 def _compare_versions(a: str, b: str) -> int:
@@ -49,24 +49,187 @@ class ConfigStatus(Enum):
 
 
 @dataclass
-class Subcategory:
-    folder_name: str
-    patterns: List[str] = field(default_factory=list)
-    exif_indicators: List[str] = field(default_factory=list)
-    extensions: List[str] = field(default_factory=list)
+class MatchCondition:
+    """One rule condition; values are OR-matched when multiple entries exist."""
+
+    type: str
+    values: List[Any] = field(default_factory=list)
+    value: Optional[Any] = None
+
+    @classmethod
+    def from_dict(cls, raw: Dict[str, Any]) -> MatchCondition:
+        return cls(
+            type=str(raw.get("type", "")).lower(),
+            values=list(raw.get("values", [])) if raw.get("values") is not None else [],
+            value=raw.get("value"),
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        d: Dict[str, Any] = {"type": self.type}
+        if self.values:
+            d["values"] = self.values
+        if self.value is not None:
+            d["value"] = self.value
+        return d
+
+
+@dataclass
+class SortRule:
+    """Ordered sort rule: first matching rule (by priority) wins.
+
+    match_mode ``all`` requires every condition to pass (AND).
+    match_mode ``any`` requires at least one condition to pass (OR) — used when
+    migrating legacy subcategories where extension, glob, and exif were ORed.
+    """
+
+    name: str
+    folder: str
+    priority: int
+    conditions: List[MatchCondition] = field(default_factory=list)
+    match_mode: str = "all"  # "all" | "any"
+
+    @classmethod
+    def from_dict(cls, raw: Dict[str, Any]) -> SortRule:
+        conds = [MatchCondition.from_dict(c) for c in raw.get("conditions", []) if isinstance(c, dict)]
+        return cls(
+            name=str(raw.get("name", "")),
+            folder=str(raw.get("folder", "")),
+            priority=int(raw.get("priority", 0)),
+            conditions=conds,
+            match_mode=str(raw.get("match_mode", "all")).lower(),
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        d: Dict[str, Any] = {
+            "name": self.name,
+            "folder": self.folder,
+            "priority": self.priority,
+            "conditions": [c.to_dict() for c in self.conditions],
+        }
+        if self.match_mode != "all":
+            d["match_mode"] = self.match_mode
+        return d
 
 
 @dataclass
 class Category:
     extensions: List[str]
     folder_name: str
-    subcategories: Dict[str, Subcategory] = field(default_factory=dict)
+    rules: List[SortRule] = field(default_factory=list)
+
+
+def _legacy_exif_to_condition_dicts(exif_indicators: List[str]) -> List[Dict[str, Any]]:
+    """Map legacy exif_indicators to v3.1 condition dicts."""
+    out: List[Dict[str, Any]] = []
+    literals: List[str] = []
+    has_cam = False
+    for ind in exif_indicators:
+        il = str(ind).lower()
+        if il in ("camera_make", "camera_model", "camera_info"):
+            has_cam = True
+        elif il in ("screenshot_software", "screenshot"):
+            out.append({"type": "exif_screenshot_like"})
+        elif il in ("web_browser", "download_software"):
+            continue
+        else:
+            literals.append(str(ind))
+    if has_cam:
+        out.append({"type": "exif_camera"})
+    if literals:
+        out.append({"type": "exif_contains", "values": literals})
+    return out
+
+
+def rules_from_legacy_subcategories(subcategories: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Convert legacy ``subcategories`` dict to ``rules`` JSON objects (unordered)."""
+    raw_rules: List[Dict[str, Any]] = []
+    priority = 1000
+    for key, sd in subcategories.items():
+        if not isinstance(sd, dict):
+            continue
+        folder = str(sd.get("folder_name", key))
+        conditions: List[Dict[str, Any]] = []
+        exts = sd.get("extensions") or []
+        if exts:
+            conditions.append({"type": "extension", "values": list(exts)})
+        pats = sd.get("patterns") or []
+        if pats:
+            conditions.append({"type": "glob", "values": list(pats)})
+        for c in _legacy_exif_to_condition_dicts(list(sd.get("exif_indicators") or [])):
+            conditions.append(c)
+        if not conditions:
+            continue
+        match_mode = "any" if len(conditions) > 1 else "all"
+        raw_rules.append(
+            {
+                "name": str(key),
+                "folder": folder,
+                "priority": priority,
+                "conditions": conditions,
+                "match_mode": match_mode,
+            }
+        )
+        priority -= 1
+    raw_rules.sort(key=lambda r: -int(r.get("priority", 0)))
+    return raw_rules
+
+
+def parse_sort_rules_from_category_data(data: Dict[str, Any]) -> List[SortRule]:
+    """Build ``SortRule`` list from category JSON (``rules`` or legacy ``subcategories``)."""
+    rules_raw = data.get("rules")
+    if isinstance(rules_raw, list) and rules_raw:
+        rules = [SortRule.from_dict(r) for r in rules_raw if isinstance(r, dict)]
+        rules.sort(key=lambda r: (-r.priority, r.name))
+        return rules
+    subs = data.get("subcategories")
+    if isinstance(subs, dict) and subs:
+        legacy = rules_from_legacy_subcategories(subs)
+        rules = [SortRule.from_dict(r) for r in legacy]
+        rules.sort(key=lambda r: (-r.priority, r.name))
+        return rules
+    return []
+
+
+def merge_subcategory_extensions_into_category(cat: Dict[str, Any]) -> None:
+    """Union all subcategory extensions into the category ``extensions`` list."""
+    exts: List[str] = []
+    seen = set()
+
+    def add_ext(e: Any) -> None:
+        if e is None:
+            return
+        if e == "":
+            if "" not in seen:
+                seen.add("")
+                exts.append("")
+            return
+        raw = str(e).strip()
+        if not raw:
+            return
+        norm = raw.lower() if raw.startswith(".") else f".{raw.lower().lstrip('.')}"
+        if norm not in seen:
+            seen.add(norm)
+            exts.append(norm)
+
+    for e in cat.get("extensions", []):
+        add_ext(e)
+    subs = cat.get("subcategories") or {}
+    if not isinstance(subs, dict):
+        return
+    for sd in subs.values():
+        if not isinstance(sd, dict):
+            continue
+        for e in sd.get("extensions") or []:
+            add_ext(e)
+    nonempty = sorted([x for x in exts if x != ""], key=str.lower)
+    empty = [""] if "" in exts else []
+    cat["extensions"] = nonempty + empty
 
 
 class ConfigMigrator:
     """Applies versioned config migrations."""
 
-    _CHAIN = {"2.1": "2.2", "2.2": "2.3", "2.3": "3.0"}
+    _CHAIN = {"2.1": "2.2", "2.2": "2.3", "2.3": "3.0", "3.0": "3.1"}
 
     def migrate(self, config: Dict, from_ver: str, to_ver: str) -> Dict:
         current = from_ver
@@ -86,6 +249,16 @@ class ConfigMigrator:
             cats = cfg.setdefault("categories", {})
             if "TheaterTechnology" not in cats:
                 cats["TheaterTechnology"] = {"extensions": [".tmix", ".qlab4"], "folder_name": "Theater Technology"}
+        if to == "3.1":
+            cats = cfg.setdefault("categories", {})
+            for _name, cat in cats.items():
+                if not isinstance(cat, dict):
+                    continue
+                subs = cat.get("subcategories")
+                if isinstance(subs, dict) and subs:
+                    merge_subcategory_extensions_into_category(cat)
+                    cat["rules"] = rules_from_legacy_subcategories(subs)
+                    del cat["subcategories"]
         return cfg
 
 
@@ -154,18 +327,13 @@ class ConfigManager:
     def get_categories(self) -> Dict[str, Category]:
         cats: Dict[str, Category] = {}
         for name, data in self.config.get("categories", {}).items():
-            subs = {}
-            for sn, sd in data.get("subcategories", {}).items():
-                subs[sn] = Subcategory(
-                    folder_name=sd.get("folder_name", sn),
-                    patterns=sd.get("patterns", []),
-                    exif_indicators=sd.get("exif_indicators", []),
-                    extensions=sd.get("extensions", []),
-                )
+            if not isinstance(data, dict):
+                continue
+            rules = parse_sort_rules_from_category_data(data)
             cats[name] = Category(
                 extensions=data.get("extensions", []),
                 folder_name=data.get("folder_name", name),
-                subcategories=subs,
+                rules=rules,
             )
         return cats
 
@@ -178,7 +346,11 @@ class ConfigManager:
         return ext_map
 
     def add_category(self, name: str, extensions: List[str], folder_name: str) -> bool:
-        self.config.setdefault("categories", {})[name] = {"extensions": extensions, "folder_name": folder_name}
+        self.config.setdefault("categories", {})[name] = {
+            "extensions": extensions,
+            "folder_name": folder_name,
+            "rules": [],
+        }
         self._mark_user_modified()
         return self.save_config()
 
@@ -187,7 +359,7 @@ class ConfigManager:
         if cat is None:
             return False
         for k, v in kwargs.items():
-            if k in ("extensions", "folder_name", "subcategories"):
+            if k in ("extensions", "folder_name", "subcategories", "rules"):
                 cat[k] = v
         self._mark_user_modified()
         return self.save_config()
@@ -235,7 +407,11 @@ class ConfigManager:
                 def_exts = set(default_cat.get("extensions", []))
                 updated["categories"][cat_name]["extensions"] = sorted(cur_exts | def_exts)
                 updated["categories"][cat_name].setdefault("folder_name", default_cat.get("folder_name", cat_name))
-        updated.setdefault("metadata", {})["version"] = self._defaults.get("metadata", {}).get("version", "3.0")
+                def_rules = default_cat.get("rules")
+                if isinstance(def_rules, list) and def_rules:
+                    if not updated["categories"][cat_name].get("rules"):
+                        updated["categories"][cat_name]["rules"] = copy.deepcopy(def_rules)
+        updated.setdefault("metadata", {})["version"] = self._defaults.get("metadata", {}).get("version", "3.1")
         return updated
 
     def _validate(self) -> bool:

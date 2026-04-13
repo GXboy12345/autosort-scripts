@@ -11,6 +11,7 @@ import click
 from autosort import __version__
 from autosort.console import (
     console,
+    notify_category_counts,
     print_categories,
     print_error,
     print_file_list,
@@ -115,12 +116,7 @@ def run(path, desktop, downloads, dry_run, quiet):
         um.commit_transaction(tid)
         if not quiet:
             from autosort.services.notify import notify_sort_complete
-            cats: dict[str, int] = {}
-            for op in result.operations:
-                if op.destination:
-                    cat = op.destination.parent.name
-                    cats[cat] = cats.get(cat, 0) + 1
-            notify_sort_complete(cats, quiet=quiet)
+            notify_sort_complete(notify_category_counts(result.operations), quiet=quiet)
 
     raise SystemExit(0 if result.success else 1)
 
@@ -164,12 +160,7 @@ def watch(paths, desktop, downloads, quiet):
             result = fo.organize_directory(parent, dry_run=False)
             if result.files_moved > 0:
                 um.commit_transaction(tid)
-                cats: dict[str, int] = {}
-                for op in result.operations:
-                    if op.destination:
-                        cat = op.destination.parent.name
-                        cats[cat] = cats.get(cat, 0) + 1
-                notify_sort_complete(cats, quiet=quiet)
+                notify_sort_complete(notify_category_counts(result.operations), quiet=quiet)
                 if not quiet:
                     console.print(f"[green]Sorted {result.files_moved} file(s)[/green]")
 

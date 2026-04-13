@@ -136,9 +136,18 @@ class AutoSortApp(App):
             ext_str = ", ".join(exts[:4])
             if len(exts) > 4:
                 ext_str += f" (+{len(exts) - 4})"
-            subs = len(data.get("subcategories", {}))
-            sub_str = f" [{subs} subcategories]" if subs else ""
+            rules = data.get("rules") or []
+            nrules = len(rules) if isinstance(rules, list) else 0
+            sub_str = f" [{nrules} rules]" if nrules else ""
             log.write(f"  [cyan]{data.get('folder_name', name)}[/cyan]: {ext_str}{sub_str}")
+            if isinstance(rules, list) and rules:
+                for r in sorted(rules, key=lambda x: -int(x.get("priority", 0)))[:8]:
+                    rname = r.get("name", "")
+                    pri = r.get("priority", "")
+                    folder = r.get("folder", "")
+                    log.write(f"      [dim]p{pri}[/dim] [yellow]{rname}[/yellow] -> {folder}")
+                if len(rules) > 8:
+                    log.write(f"      [dim]... +{len(rules) - 8} more[/dim]")
 
     @work(thread=True)
     def _run_sort(self, source: Path) -> None:
@@ -167,13 +176,10 @@ class AutoSortApp(App):
                 log.write,
                 f"[green]Done: {result.files_moved} files sorted, {result.errors} errors[/green]",
             )
+            from autosort.console import notify_category_counts
             from autosort.services.notify import notify_sort_complete
-            cats: dict[str, int] = {}
-            for op in result.operations:
-                if op.destination:
-                    cat = op.destination.parent.name
-                    cats[cat] = cats.get(cat, 0) + 1
-            notify_sort_complete(cats)
+
+            notify_sort_complete(notify_category_counts(result.operations))
         else:
             self.call_from_thread(log.write, "[dim]No files to organize.[/dim]")
 

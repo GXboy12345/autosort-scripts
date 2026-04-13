@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "version": "3.0",
+    "version": "3.1",
     "auto_generated": true,
     "last_updated": "2026-04-13",
-    "note": "Default configuration for AutoSort v3 (extensions aligned with dyne/file-extension-list categories)"
+    "note": "Default configuration for AutoSort v3.1 (rules engine)"
   },
   "categories": {
     "Images": {
@@ -16,6 +16,7 @@
         ".dds",
         ".dng",
         ".eps",
+        ".fig",
         ".gif",
         ".heic",
         ".heif",
@@ -34,6 +35,7 @@
         ".ps",
         ".psd",
         ".raw",
+        ".sketch",
         ".svg",
         ".tga",
         ".thm",
@@ -43,67 +45,130 @@
         ".xcf"
       ],
       "folder_name": "Images",
-      "subcategories": {
-        "Screenshots": {
-          "patterns": [
-            "Screenshot*",
-            "Screen Shot*"
+      "rules": [
+        {
+          "name": "Screenshots",
+          "folder": "Screenshots",
+          "priority": 1100,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "Screenshot*",
+                "Screen Shot*"
+              ]
+            },
+            {
+              "type": "exif_screenshot_like"
+            }
           ],
-          "exif_indicators": [
-            "screenshot_software"
-          ],
-          "folder_name": "Screenshots"
+          "match_mode": "any"
         },
-        "Adobe_Edited": {
-          "exif_indicators": [
-            "Adobe Photoshop",
-            "Adobe Lightroom",
-            "Adobe Camera Raw",
-            "Adobe"
-          ],
-          "folder_name": "Adobe Edited"
+        {
+          "name": "Large_RAW",
+          "folder": "RAW Photos/Large",
+          "priority": 1110,
+          "match_mode": "all",
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".cr2",
+                ".nef",
+                ".arw",
+                ".orf",
+                ".dng",
+                ".raw"
+              ]
+            },
+            {
+              "type": "size_gte",
+              "value": 52428800
+            }
+          ]
         },
-        "Camera_Photos": {
-          "exif_indicators": [
-            "camera_make",
-            "camera_model"
+        {
+          "name": "Adobe_Edited",
+          "folder": "Adobe Edited",
+          "priority": 1099,
+          "conditions": [
+            {
+              "type": "exif_contains",
+              "values": [
+                "Adobe Photoshop",
+                "Adobe Lightroom",
+                "Adobe Camera Raw",
+                "Adobe"
+              ]
+            }
           ],
-          "folder_name": "Camera Photos"
+          "match_mode": "all"
         },
-        "Web_Downloads": {
-          "patterns": [
-            "image*",
-            "img*",
-            "photo*"
+        {
+          "name": "Camera_Photos",
+          "folder": "Camera Photos",
+          "priority": 1098,
+          "conditions": [
+            {
+              "type": "exif_camera"
+            }
           ],
-          "exif_indicators": [
-            "web_browser",
-            "download_software"
-          ],
-          "folder_name": "Web Downloads"
+          "match_mode": "all"
         },
-        "Design_Files": {
-          "extensions": [
-            ".psd",
-            ".ai",
-            ".eps",
-            ".sketch",
-            ".fig"
+        {
+          "name": "Web_Downloads",
+          "folder": "Web Downloads",
+          "priority": 1097,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "image*",
+                "img*",
+                "photo*"
+              ]
+            }
           ],
-          "folder_name": "Design Files"
+          "match_mode": "all"
         },
-        "RAW_Photos": {
-          "extensions": [
-            ".raw",
-            ".dng",
-            ".cr2",
-            ".nef",
-            ".arw",
-            ".orf"
+        {
+          "name": "Design_Files",
+          "folder": "Design Files",
+          "priority": 1096,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".psd",
+                ".ai",
+                ".eps",
+                ".sketch",
+                ".fig"
+              ]
+            }
           ],
-          "folder_name": "RAW Photos"
+          "match_mode": "all"
+        },
+        {
+          "name": "RAW_Photos",
+          "folder": "RAW Photos",
+          "priority": 1095,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".raw",
+                ".dng",
+                ".cr2",
+                ".nef",
+                ".arw",
+                ".orf"
+              ]
+            }
+          ],
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "Audio": {
       "extensions": [
@@ -136,53 +201,93 @@
         ".xm"
       ],
       "folder_name": "Audio",
-      "subcategories": {
-        "Music": {
-          "patterns": [
-            "*music*",
-            "*song*",
-            "*track*",
-            "*album*",
-            "*playlist*"
+      "rules": [
+        {
+          "name": "Music",
+          "folder": "Music",
+          "priority": 1000,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*music*",
+                "*song*",
+                "*track*",
+                "*album*",
+                "*playlist*"
+              ]
+            }
           ],
-          "folder_name": "Music"
+          "match_mode": "all"
         },
-        "Podcasts": {
-          "patterns": [
-            "*podcast*",
-            "*episode*",
-            "*show*"
+        {
+          "name": "Podcasts",
+          "folder": "Podcasts",
+          "priority": 999,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*podcast*",
+                "*episode*",
+                "*show*"
+              ]
+            }
           ],
-          "folder_name": "Podcasts"
+          "match_mode": "all"
         },
-        "Voice_Recordings": {
-          "patterns": [
-            "*voice*",
-            "*recording*",
-            "*memo*",
-            "*note*",
-            "*interview*"
+        {
+          "name": "Voice_Recordings",
+          "folder": "Voice Recordings",
+          "priority": 998,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*voice*",
+                "*recording*",
+                "*memo*",
+                "*note*",
+                "*interview*"
+              ]
+            }
           ],
-          "folder_name": "Voice Recordings"
+          "match_mode": "all"
         },
-        "Sound_Effects": {
-          "patterns": [
-            "*sfx*",
-            "*sound*",
-            "*effect*",
-            "*audio*"
+        {
+          "name": "Sound_Effects",
+          "folder": "Sound Effects",
+          "priority": 997,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*sfx*",
+                "*sound*",
+                "*effect*",
+                "*audio*"
+              ]
+            }
           ],
-          "folder_name": "Sound Effects"
+          "match_mode": "all"
         },
-        "Audiobooks": {
-          "patterns": [
-            "*audiobook*",
-            "*book*",
-            "*chapter*"
+        {
+          "name": "Audiobooks",
+          "folder": "Audiobooks",
+          "priority": 996,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*audiobook*",
+                "*book*",
+                "*chapter*"
+              ]
+            }
           ],
-          "folder_name": "Audiobooks"
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "Video": {
       "extensions": [
@@ -231,54 +336,106 @@
         ".yuv"
       ],
       "folder_name": "Video",
-      "subcategories": {
-        "Movies": {
-          "patterns": [
-            "*movie*",
-            "*film*",
-            "*cinema*"
+      "rules": [
+        {
+          "name": "Movies",
+          "folder": "Movies",
+          "priority": 1100,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*movie*",
+                "*film*",
+                "*cinema*"
+              ]
+            }
           ],
-          "folder_name": "Movies"
+          "match_mode": "all"
         },
-        "TV_Shows": {
-          "patterns": [
-            "*episode*",
-            "*season*",
-            "*series*",
-            "*show*"
-          ],
-          "folder_name": "TV Shows"
+        {
+          "name": "TV_Episode_Filename",
+          "folder": "TV Shows",
+          "priority": 1110,
+          "match_mode": "all",
+          "conditions": [
+            {
+              "type": "regex",
+              "value": ".*\\b[Ss]\\d{1,2}[Ee]\\d{1,2}\\b.*"
+            }
+          ]
         },
-        "Tutorials": {
-          "patterns": [
-            "*tutorial*",
-            "*howto*",
-            "*guide*",
-            "*lesson*",
-            "*course*"
+        {
+          "name": "TV_Shows",
+          "folder": "TV Shows",
+          "priority": 1099,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*episode*",
+                "*season*",
+                "*series*",
+                "*show*"
+              ]
+            }
           ],
-          "folder_name": "Tutorials"
+          "match_mode": "all"
         },
-        "Screen_Recordings": {
-          "patterns": [
-            "*screen*",
-            "*recording*",
-            "*capture*",
-            "*demo*"
+        {
+          "name": "Tutorials",
+          "folder": "Tutorials",
+          "priority": 1098,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*tutorial*",
+                "*howto*",
+                "*guide*",
+                "*lesson*",
+                "*course*"
+              ]
+            }
           ],
-          "folder_name": "Screen Recordings"
+          "match_mode": "all"
         },
-        "Home_Videos": {
-          "patterns": [
-            "*home*",
-            "*family*",
-            "*personal*",
-            "*vacation*",
-            "*trip*"
+        {
+          "name": "Screen_Recordings",
+          "folder": "Screen Recordings",
+          "priority": 1097,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*screen*",
+                "*recording*",
+                "*capture*",
+                "*demo*"
+              ]
+            }
           ],
-          "folder_name": "Home Videos"
+          "match_mode": "all"
+        },
+        {
+          "name": "Home_Videos",
+          "folder": "Home Videos",
+          "priority": 1096,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*home*",
+                "*family*",
+                "*personal*",
+                "*vacation*",
+                "*trip*"
+              ]
+            }
+          ],
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "Text": {
       "extensions": [
@@ -290,6 +447,7 @@
         ".ini",
         ".json",
         ".log",
+        ".markdown",
         ".md",
         ".org",
         ".properties",
@@ -303,54 +461,97 @@
         ".yml"
       ],
       "folder_name": "Text",
-      "subcategories": {
-        "Markdown": {
-          "extensions": [
-            ".md",
-            ".markdown"
+      "rules": [
+        {
+          "name": "Markdown",
+          "folder": "Markdown",
+          "priority": 1000,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".md",
+                ".markdown"
+              ]
+            }
           ],
-          "folder_name": "Markdown"
+          "match_mode": "all"
         },
-        "Logs": {
-          "extensions": [
-            ".log"
+        {
+          "name": "Logs",
+          "folder": "Logs",
+          "priority": 999,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".log"
+              ]
+            },
+            {
+              "type": "glob",
+              "values": [
+                "*log*",
+                "*error*",
+                "*debug*"
+              ]
+            }
           ],
-          "patterns": [
-            "*log*",
-            "*error*",
-            "*debug*"
-          ],
-          "folder_name": "Logs"
+          "match_mode": "any"
         },
-        "Data": {
-          "extensions": [
-            ".csv",
-            ".json",
-            ".xml",
-            ".yaml",
-            ".yml"
+        {
+          "name": "Data",
+          "folder": "Data",
+          "priority": 998,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".csv",
+                ".json",
+                ".xml",
+                ".yaml",
+                ".yml"
+              ]
+            }
           ],
-          "folder_name": "Data"
+          "match_mode": "all"
         },
-        "Config": {
-          "extensions": [
-            ".ini",
-            ".cfg",
-            ".conf",
-            ".toml",
-            ".properties"
+        {
+          "name": "Config",
+          "folder": "Config",
+          "priority": 997,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".ini",
+                ".cfg",
+                ".conf",
+                ".toml",
+                ".properties"
+              ]
+            }
           ],
-          "folder_name": "Config"
+          "match_mode": "all"
         },
-        "Notes": {
-          "patterns": [
-            "*note*",
-            "*todo*",
-            "*readme*"
+        {
+          "name": "Notes",
+          "folder": "Notes",
+          "priority": 996,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*note*",
+                "*todo*",
+                "*readme*"
+              ]
+            }
           ],
-          "folder_name": "Notes"
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "Documents": {
       "extensions": [
@@ -363,38 +564,70 @@
         ".wps"
       ],
       "folder_name": "Documents",
-      "subcategories": {
-        "PDFs": {
-          "extensions": [
-            ".pdf"
+      "rules": [
+        {
+          "name": "PDFs",
+          "folder": "PDFs",
+          "priority": 1000,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".pdf"
+              ]
+            }
           ],
-          "folder_name": "PDFs"
+          "match_mode": "all"
         },
-        "Word_Documents": {
-          "extensions": [
-            ".doc",
-            ".docx",
-            ".odt",
-            ".wpd",
-            ".wps"
+        {
+          "name": "Word_Documents",
+          "folder": "Word Documents",
+          "priority": 999,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".doc",
+                ".docx",
+                ".odt",
+                ".wpd",
+                ".wps"
+              ]
+            }
           ],
-          "folder_name": "Word Documents"
+          "match_mode": "all"
         },
-        "Pages_Documents": {
-          "extensions": [
-            ".pages"
+        {
+          "name": "Pages_Documents",
+          "folder": "Pages Documents",
+          "priority": 998,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".pages"
+              ]
+            }
           ],
-          "folder_name": "Pages Documents"
+          "match_mode": "all"
         },
-        "Scanned_Documents": {
-          "patterns": [
-            "*scan*",
-            "*scanned*",
-            "*document*"
+        {
+          "name": "Scanned_Documents",
+          "folder": "Scanned Documents",
+          "priority": 997,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*scan*",
+                "*scanned*",
+                "*document*"
+              ]
+            }
           ],
-          "folder_name": "Scanned Documents"
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "Code": {
       "extensions": [
@@ -406,12 +639,15 @@
         ".aspx",
         ".bas",
         ".bash",
+        ".bat",
         ".c",
         ".c++",
         ".cbl",
         ".cc",
+        ".cjs",
         ".class",
         ".clj",
+        ".cmd",
         ".cob",
         ".command",
         ".cpp",
@@ -441,6 +677,7 @@
         ".html",
         ".hxx",
         ".inc",
+        ".ipynb",
         ".java",
         ".js",
         ".jsp",
@@ -454,6 +691,7 @@
         ".lua",
         ".m",
         ".m4",
+        ".mjs",
         ".nim",
         ".patch",
         ".php",
@@ -473,10 +711,15 @@
         ".psrc",
         ".pssc",
         ".py",
+        ".pyc",
+        ".pyd",
+        ".pyo",
         ".r",
         ".rb",
+        ".rdata",
         ".rs",
         ".s",
+        ".sass",
         ".scala",
         ".scss",
         ".sh",
@@ -497,73 +740,121 @@
         ".zsh"
       ],
       "folder_name": "Code",
-      "subcategories": {
-        "Python": {
-          "extensions": [
-            ".py",
-            ".pyc",
-            ".pyo",
-            ".pyd"
+      "rules": [
+        {
+          "name": "Python",
+          "folder": "Python",
+          "priority": 1000,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".py",
+                ".pyc",
+                ".pyo",
+                ".pyd"
+              ]
+            }
           ],
-          "folder_name": "Python"
+          "match_mode": "all"
         },
-        "JavaScript": {
-          "extensions": [
-            ".js",
-            ".jsx",
-            ".ts",
-            ".tsx",
-            ".mjs",
-            ".cjs"
+        {
+          "name": "JavaScript",
+          "folder": "JavaScript",
+          "priority": 999,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".js",
+                ".jsx",
+                ".ts",
+                ".tsx",
+                ".mjs",
+                ".cjs"
+              ]
+            }
           ],
-          "folder_name": "JavaScript"
+          "match_mode": "all"
         },
-        "Web": {
-          "extensions": [
-            ".html",
-            ".htm",
-            ".css",
-            ".scss",
-            ".less",
-            ".sass",
-            ".vue",
-            ".svelte"
+        {
+          "name": "Web",
+          "folder": "Web",
+          "priority": 998,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".html",
+                ".htm",
+                ".css",
+                ".scss",
+                ".less",
+                ".sass",
+                ".vue",
+                ".svelte"
+              ]
+            }
           ],
-          "folder_name": "Web"
+          "match_mode": "all"
         },
-        "Scripts": {
-          "extensions": [
-            ".sh",
-            ".bash",
-            ".zsh",
-            ".csh",
-            ".fish",
-            ".ksh",
-            ".ps1",
-            ".bat",
-            ".cmd"
+        {
+          "name": "Scripts",
+          "folder": "Scripts",
+          "priority": 997,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".sh",
+                ".bash",
+                ".zsh",
+                ".csh",
+                ".fish",
+                ".ksh",
+                ".ps1",
+                ".bat",
+                ".cmd"
+              ]
+            }
           ],
-          "folder_name": "Scripts"
+          "match_mode": "all"
         },
-        "Mobile": {
-          "extensions": [
-            ".swift",
-            ".kt",
-            ".kts",
-            ".dart"
+        {
+          "name": "Mobile",
+          "folder": "Mobile",
+          "priority": 996,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".swift",
+                ".kt",
+                ".kts",
+                ".dart"
+              ]
+            }
           ],
-          "folder_name": "Mobile"
+          "match_mode": "all"
         },
-        "Data_Science": {
-          "extensions": [
-            ".r",
-            ".m",
-            ".ipynb",
-            ".rdata"
+        {
+          "name": "Data_Science",
+          "folder": "Data Science",
+          "priority": 995,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".r",
+                ".m",
+                ".ipynb",
+                ".rdata"
+              ]
+            }
           ],
-          "folder_name": "Data Science"
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "Archives": {
       "extensions": [
@@ -610,42 +901,74 @@
         ".zstd"
       ],
       "folder_name": "Archives",
-      "subcategories": {
-        "Compressed": {
-          "extensions": [
-            ".zip",
-            ".rar",
-            ".7z",
-            ".cab",
-            ".ace",
-            ".arj"
+      "rules": [
+        {
+          "name": "Compressed",
+          "folder": "Compressed",
+          "priority": 1000,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".zip",
+                ".rar",
+                ".7z",
+                ".cab",
+                ".ace",
+                ".arj"
+              ]
+            }
           ],
-          "folder_name": "Compressed"
+          "match_mode": "all"
         },
-        "Tarballs": {
-          "extensions": [
-            ".tar",
-            ".tar.gz",
-            ".tar.bz2",
-            ".tar.xz",
-            ".tgz"
+        {
+          "name": "Tarballs",
+          "folder": "Tarballs",
+          "priority": 999,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".tar",
+                ".tar.gz",
+                ".tar.bz2",
+                ".tar.xz",
+                ".tgz"
+              ]
+            }
           ],
-          "folder_name": "Tarballs"
+          "match_mode": "all"
         },
-        "Backups": {
-          "patterns": [
-            "*backup*"
+        {
+          "name": "Backups",
+          "folder": "Backups",
+          "priority": 998,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*backup*"
+              ]
+            }
           ],
-          "folder_name": "Backups"
+          "match_mode": "all"
         },
-        "Downloads": {
-          "patterns": [
-            "*download*",
-            "*downloaded*"
+        {
+          "name": "Downloads",
+          "folder": "Downloads",
+          "priority": 997,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*download*",
+                "*downloaded*"
+              ]
+            }
           ],
-          "folder_name": "Downloads"
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "NonMac": {
       "extensions": [
@@ -661,7 +984,8 @@
         ".scr",
         ".sys"
       ],
-      "folder_name": "Non-Mac Files"
+      "folder_name": "Non-Mac Files",
+      "rules": []
     },
     "DiskImages": {
       "extensions": [
@@ -675,7 +999,8 @@
         ".vmdk",
         ".qcow2"
       ],
-      "folder_name": "Disk Images"
+      "folder_name": "Disk Images",
+      "rules": []
     },
     "MusicScores": {
       "extensions": [
@@ -690,7 +1015,8 @@
         ".musicxml",
         ".mxl"
       ],
-      "folder_name": "Music Scores"
+      "folder_name": "Music Scores",
+      "rules": []
     },
     "3DModels": {
       "extensions": [
@@ -718,47 +1044,87 @@
         ".stp"
       ],
       "folder_name": "3D Models",
-      "subcategories": {
-        "Print_Ready": {
-          "extensions": [
-            ".stl",
-            ".3mf"
+      "rules": [
+        {
+          "name": "Print_Ready",
+          "folder": "Print Ready",
+          "priority": 1000,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".stl",
+                ".3mf"
+              ]
+            }
           ],
-          "folder_name": "Print Ready"
+          "match_mode": "all"
         },
-        "CAD_Models": {
-          "extensions": [
-            ".dwg",
-            ".dxf",
-            ".igs",
-            ".iges",
-            ".stp",
-            ".step"
+        {
+          "name": "CAD_Models",
+          "folder": "CAD Models",
+          "priority": 999,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".dwg",
+                ".dxf",
+                ".igs",
+                ".iges",
+                ".stp",
+                ".step"
+              ]
+            }
           ],
-          "folder_name": "CAD Models"
+          "match_mode": "all"
         },
-        "Game_Assets": {
-          "extensions": [
-            ".fbx",
-            ".glb",
-            ".gltf"
+        {
+          "name": "Game_Assets",
+          "folder": "Game Assets",
+          "priority": 998,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".fbx",
+                ".glb",
+                ".gltf"
+              ]
+            }
           ],
-          "folder_name": "Game Assets"
+          "match_mode": "all"
         },
-        "Blender_Files": {
-          "extensions": [
-            ".blend"
+        {
+          "name": "Blender_Files",
+          "folder": "Blender Files",
+          "priority": 997,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".blend"
+              ]
+            }
           ],
-          "folder_name": "Blender Files"
+          "match_mode": "all"
         },
-        "Scanned_Models": {
-          "patterns": [
-            "*scan*",
-            "*scanned*"
+        {
+          "name": "Scanned_Models",
+          "folder": "Scanned Models",
+          "priority": 996,
+          "conditions": [
+            {
+              "type": "glob",
+              "values": [
+                "*scan*",
+                "*scanned*"
+              ]
+            }
           ],
-          "folder_name": "Scanned Models"
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "eBooks": {
       "extensions": [
@@ -774,7 +1140,8 @@
         ".fb2",
         ".mobi"
       ],
-      "folder_name": "eBooks"
+      "folder_name": "eBooks",
+      "rules": []
     },
     "Fonts": {
       "extensions": [
@@ -785,14 +1152,16 @@
         ".woff",
         ".woff2"
       ],
-      "folder_name": "Fonts"
+      "folder_name": "Fonts",
+      "rules": []
     },
     "Contacts": {
       "extensions": [
         ".vcf",
         ".vcard"
       ],
-      "folder_name": "Contacts"
+      "folder_name": "Contacts",
+      "rules": []
     },
     "Databases": {
       "extensions": [
@@ -804,7 +1173,8 @@
         ".odb",
         ".dbf"
       ],
-      "folder_name": "Databases"
+      "folder_name": "Databases",
+      "rules": []
     },
     "Certificates": {
       "extensions": [
@@ -819,7 +1189,8 @@
         ".p7b",
         ".p7c"
       ],
-      "folder_name": "Certificates"
+      "folder_name": "Certificates",
+      "rules": []
     },
     "GIS": {
       "extensions": [
@@ -831,7 +1202,8 @@
         ".gml",
         ".asc"
       ],
-      "folder_name": "GIS"
+      "folder_name": "GIS",
+      "rules": []
     },
     "VideoProjects": {
       "extensions": [
@@ -841,7 +1213,8 @@
         ".fcpxml",
         ".aep"
       ],
-      "folder_name": "Video Projects"
+      "folder_name": "Video Projects",
+      "rules": []
     },
     "AudioProjects": {
       "extensions": [
@@ -853,7 +1226,8 @@
         ".ptx",
         ".rpp"
       ],
-      "folder_name": "Audio Projects"
+      "folder_name": "Audio Projects",
+      "rules": []
     },
     "Spreadsheets": {
       "extensions": [
@@ -864,7 +1238,8 @@
         ".xlsm",
         ".xlsx"
       ],
-      "folder_name": "Spreadsheets"
+      "folder_name": "Spreadsheets",
+      "rules": []
     },
     "Presentations": {
       "extensions": [
@@ -875,13 +1250,15 @@
         ".key",
         ".odp"
       ],
-      "folder_name": "Presentations"
+      "folder_name": "Presentations",
+      "rules": []
     },
     "Torrents": {
       "extensions": [
         ".torrent"
       ],
-      "folder_name": "Torrents"
+      "folder_name": "Torrents",
+      "rules": []
     },
     "Sideloading": {
       "extensions": [
@@ -891,7 +1268,8 @@
         ".mobileprovision",
         ".xapk"
       ],
-      "folder_name": "Sideloading"
+      "folder_name": "Sideloading",
+      "rules": []
     },
     "Subtitles": {
       "extensions": [
@@ -903,7 +1281,8 @@
         ".vtt",
         ".ttml"
       ],
-      "folder_name": "Subtitles"
+      "folder_name": "Subtitles",
+      "rules": []
     },
     "Emails": {
       "extensions": [
@@ -912,7 +1291,8 @@
         ".emlx",
         ".oft"
       ],
-      "folder_name": "Emails"
+      "folder_name": "Emails",
+      "rules": []
     },
     "Calendars": {
       "extensions": [
@@ -921,63 +1301,83 @@
         ".ifb",
         ".vcs"
       ],
-      "folder_name": "Calendars"
+      "folder_name": "Calendars",
+      "rules": []
     },
     "GameFiles": {
       "extensions": [
-        ".osr",
-        ".osz",
-        ".osk",
-        ".osu",
         ".jar",
-        ".schem",
-        ".schematic",
         ".litematic",
         ".litematica",
+        ".mcfunction",
         ".nbt",
-        ".mcfunction"
+        ".osk",
+        ".osr",
+        ".osu",
+        ".osz",
+        ".schem",
+        ".schematic"
       ],
       "folder_name": "Game Files",
-      "subcategories": {
-        "Osu": {
-          "extensions": [
-            ".osr",
-            ".osz",
-            ".osk",
-            ".osu"
+      "rules": [
+        {
+          "name": "Osu",
+          "folder": "Osu",
+          "priority": 1000,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".osr",
+                ".osz",
+                ".osk",
+                ".osu"
+              ]
+            }
           ],
-          "folder_name": "Osu"
+          "match_mode": "all"
         },
-        "Minecraft": {
-          "extensions": [
-            ".jar",
-            ".schem",
-            ".schematic",
-            ".litematic",
-            ".litematica",
-            ".nbt",
-            ".mcfunction"
+        {
+          "name": "Minecraft",
+          "folder": "Minecraft",
+          "priority": 999,
+          "conditions": [
+            {
+              "type": "extension",
+              "values": [
+                ".jar",
+                ".schem",
+                ".schematic",
+                ".litematic",
+                ".litematica",
+                ".nbt",
+                ".mcfunction"
+              ]
+            }
           ],
-          "folder_name": "Minecraft"
+          "match_mode": "all"
         }
-      }
+      ]
     },
     "TheaterTechnology": {
       "extensions": [
         ".tmix",
         ".qlab4"
       ],
-      "folder_name": "Theater Technology"
+      "folder_name": "Theater Technology",
+      "rules": []
     },
     "Extensionless": {
       "extensions": [
         ""
       ],
-      "folder_name": "Extensionless"
+      "folder_name": "Extensionless",
+      "rules": []
     },
     "Miscellaneous": {
       "extensions": [],
-      "folder_name": "Miscellaneous"
+      "folder_name": "Miscellaneous",
+      "rules": []
     }
   }
 }

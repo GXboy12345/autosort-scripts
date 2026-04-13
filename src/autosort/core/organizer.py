@@ -5,12 +5,16 @@ from __future__ import annotations
 import fnmatch
 import logging
 import os
+import re
 import shutil
 import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
+from autosort.core.config import Category, MatchCondition, SortRule
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +43,8 @@ class FileInfo:
     path: Path
     size: int
     category: str
-    subcategory: str = ""
+    rule_folder: str = ""
+    rule_name: str = ""
     error_message: str = ""
 
 
@@ -51,6 +56,232 @@ class OrganizationResult:
     errors: int
     operations: List[FileOperation]
     error_log: List[str]
+
+
+class _FileSignals:
+    """Per-file cached stat and EXIF for rule evaluation."""
+
+    __slots__ = ("_path", "_stat", "_exif", "_stat_err", "_exif_done")
+
+    def __init__(self, path: Path):
+        self._path = path
+        self._stat: Optional[os.stat_result] = None
+        self._stat_err: Optional[Exception] = None
+        self._exif: Dict[str, Any] = {}
+        self._exif_done = False
+
+    def stat(self) -> Optional[os.stat_result]:
+        if self._stat_err is not None:
+            return None
+        if self._stat is None:
+            try:
+                self._stat = self._path.stat()
+            except OSError as e:
+                self._stat_err = e
+                return None
+        return self._stat
+
+    def exif(self) -> Dict[str, Any]:
+        if not self._exif_done:
+            self._exif = _read_exif(self._path)
+            self._exif_done = True
+        return self._exif
+
+
+def _read_exif(file_path: Path) -> Dict[str, Any]:
+    meta: Dict[str, Any] = {"software_used": None, "camera_info": None}
+    try:
+        import PIL.Image
+
+        with PIL.Image.open(file_path) as img:
+            exif = img.getexif()
+            if exif:
+                meta["software_used"] = exif.get(305)
+                make = exif.get(271)
+                model = exif.get(272)
+                if make or model:
+                    meta["camera_info"] = f"{make or ''} {model or ''}".strip()
+    except ImportError:
+        pass
+    except Exception:
+        pass
+    return meta
+
+
+_EXIF_IMAGE_SUFFIXES = frozenset(
+    {
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".tiff",
+        ".tif",
+        ".bmp",
+        ".gif",
+        ".webp",
+        ".heic",
+        ".heif",
+        ".avif",
+        ".jxl",
+    }
+)
+
+
+def _exif_combined_string(file_path: Path, sig: _FileSignals) -> str:
+    if file_path.suffix.lower() not in _EXIF_IMAGE_SUFFIXES:
+        return ""
+    m = sig.exif()
+    sw = m.get("software_used") or ""
+    cam = m.get("camera_info") or ""
+    return f"{sw} {cam}".lower()
+
+
+def _looks_like_screenshot_software(sw: str) -> bool:
+    if not sw:
+        return False
+    s = str(sw).lower()
+    keys = (
+        "screenshot",
+        "screen shot",
+        "snipping",
+        "snagit",
+        "cleanshot",
+        "shottr",
+        "gyazo",
+        "lightshot",
+        "skitch",
+        "screencapture",
+        "kap",
+    )
+    return any(k in s for k in keys)
+
+
+def _parse_iso_date(s: str) -> Optional[float]:
+    try:
+        raw = str(s).strip()
+        if not raw:
+            return None
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        dt = datetime.fromisoformat(raw)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.timestamp()
+    except Exception:
+        return None
+
+
+def _check_condition(
+    file_path: Path,
+    cond: MatchCondition,
+    sig: _FileSignals,
+) -> bool:
+    ct = cond.type
+    ext = file_path.suffix.lower()
+    name = file_path.name
+
+    if ct == "extension":
+        vals = cond.values or ([] if cond.value is None else [cond.value])
+        want = {str(v).lower() if str(v).startswith(".") else f".{str(v).lower().lstrip('.')}" for v in vals}
+        return ext in want
+
+    if ct == "glob":
+        vals = cond.values or ([] if cond.value is None else [cond.value])
+        nl = name.lower()
+        for pat in vals:
+            if fnmatch.fnmatch(nl, str(pat).lower()):
+                return True
+        return False
+
+    if ct == "regex":
+        pat = cond.value if cond.value is not None else (cond.values[0] if cond.values else None)
+        if not pat:
+            return False
+        try:
+            return re.search(str(pat), name, re.IGNORECASE) is not None
+        except re.error:
+            logger.debug("Invalid regex in rule: %s", pat)
+            return False
+
+    if ct == "exif_contains":
+        combined = _exif_combined_string(file_path, sig)
+        if not combined:
+            return False
+        for v in cond.values or ([] if cond.value is None else [cond.value]):
+            if str(v).lower() in combined:
+                return True
+        return False
+
+    if ct == "exif_camera":
+        if file_path.suffix.lower() not in _EXIF_IMAGE_SUFFIXES:
+            return False
+        cam = (sig.exif().get("camera_info") or "").strip()
+        return bool(cam)
+
+    if ct == "exif_screenshot_like":
+        if file_path.suffix.lower() not in _EXIF_IMAGE_SUFFIXES:
+            return False
+        sw = sig.exif().get("software_used") or ""
+        return _looks_like_screenshot_software(str(sw))
+
+    st = sig.stat()
+    if st is None:
+        return False
+
+    if ct == "size_gte":
+        lim = cond.value if cond.value is not None else (cond.values[0] if cond.values else None)
+        if lim is None:
+            return False
+        try:
+            return st.st_size >= int(lim)
+        except (TypeError, ValueError):
+            return False
+
+    if ct == "size_lte":
+        lim = cond.value if cond.value is not None else (cond.values[0] if cond.values else None)
+        if lim is None:
+            return False
+        try:
+            return st.st_size <= int(lim)
+        except (TypeError, ValueError):
+            return False
+
+    birth = getattr(st, "st_birthtime", None)
+    ts = float(birth) if birth not in (None, 0) else float(st.st_mtime)
+
+    if ct == "created_after":
+        lim = _parse_iso_date(str(cond.value if cond.value is not None else ""))
+        if lim is None and cond.values:
+            lim = _parse_iso_date(str(cond.values[0]))
+        return lim is not None and ts >= lim
+
+    if ct == "created_before":
+        lim = _parse_iso_date(str(cond.value if cond.value is not None else ""))
+        if lim is None and cond.values:
+            lim = _parse_iso_date(str(cond.values[0]))
+        return lim is not None and ts <= lim
+
+    logger.warning("Unknown rule condition type: %s", ct)
+    return False
+
+
+def _rule_matches(file_path: Path, rule: SortRule, sig: _FileSignals) -> bool:
+    if not rule.conditions:
+        return False
+    mode = rule.match_mode if rule.match_mode in ("all", "any") else "all"
+    if mode == "all":
+        return all(_check_condition(file_path, c, sig) for c in rule.conditions)
+    return any(_check_condition(file_path, c, sig) for c in rule.conditions)
+
+
+def _evaluate_rules_for_category(file_path: Path, cat: Category) -> Tuple[str, str]:
+    """Return ``(rule_folder, rule_name)`` for the first matching rule, else ``("", "")``."""
+    if not cat.rules:
+        return "", ""
+    sig = _FileSignals(file_path)
+    for rule in cat.rules:
+        if _rule_matches(file_path, rule, sig):
+            return rule.folder.strip("/").replace("\\", "/"), rule.name
+    return "", ""
 
 
 class FileOrganizer:
@@ -141,19 +372,24 @@ class FileOrganizer:
             category_stats: Dict[str, Any] = {}
             total_size = 0
             for fp in files:
-                category, subcategory = self._categorize_file(fp)
+                category_folder, rule_folder, rule_name = self._categorize_file(fp)
                 size = fp.stat().st_size
-                if category not in category_stats:
-                    category_stats[category] = {"count": 0, "size": 0, "subcategories": {}}
-                category_stats[category]["count"] += 1
-                category_stats[category]["size"] += size
+                if category_folder not in category_stats:
+                    category_stats[category_folder] = {
+                        "count": 0,
+                        "size": 0,
+                        "rules": {},
+                    }
+                category_stats[category_folder]["count"] += 1
+                category_stats[category_folder]["size"] += size
                 total_size += size
-                if subcategory:
-                    subs = category_stats[category]["subcategories"]
-                    if subcategory not in subs:
-                        subs[subcategory] = {"count": 0, "size": 0}
-                    subs[subcategory]["count"] += 1
-                    subs[subcategory]["size"] += size
+                sub_key = rule_folder or rule_name or ""
+                if sub_key:
+                    subs = category_stats[category_folder]["rules"]
+                    if sub_key not in subs:
+                        subs[sub_key] = {"count": 0, "size": 0, "rule_name": rule_name}
+                    subs[sub_key]["count"] += 1
+                    subs[sub_key]["size"] += size
             return {"total_files": len(files), "total_size": total_size, "categories": category_stats}
         except Exception as e:
             logger.error(f"Error analyzing files: {e}")
@@ -186,73 +422,26 @@ class FileOrganizer:
     def _should_ignore_file(self, file_path: Path) -> bool:
         return any(fnmatch.fnmatch(file_path.name, p) for p in self.ignore_patterns)
 
-    def _categorize_file(self, file_path: Path) -> Tuple[str, str]:
+    def _resolve_category_config(self, category_folder_name: str) -> Optional[Category]:
+        for _key, cat in self.categories.items():
+            if cat.folder_name == category_folder_name:
+                return cat
+        return None
+
+    def _categorize_file(self, file_path: Path) -> Tuple[str, str, str]:
         ext = file_path.suffix.lower()
-        category = self.extension_map.get(ext, "Miscellaneous")
-        subcategory = self._categorize_subcategory(file_path, category)
-        return category, subcategory
+        category_folder = self.extension_map.get(ext, "Miscellaneous")
+        cat = self._resolve_category_config(category_folder)
+        if not cat:
+            return category_folder, "", ""
+        rule_folder, rule_name = _evaluate_rules_for_category(file_path, cat)
+        return category_folder, rule_folder, rule_name
 
-    def _categorize_subcategory(self, file_path: Path, category_folder_name: str) -> str:
-        try:
-            category_key = None
-            for key, cat in self.categories.items():
-                if cat.folder_name == category_folder_name:
-                    category_key = key
-                    break
-            if not category_key:
-                return ""
-            cat_config = self.categories[category_key]
-            if not cat_config.subcategories:
-                return ""
-            for _name, sub in cat_config.subcategories.items():
-                if self._matches_subcategory(file_path, sub):
-                    return sub.folder_name
-            return ""
-        except Exception:
-            return ""
-
-    def _matches_subcategory(self, file_path: Path, sub) -> bool:
-        ext = file_path.suffix.lower()
-        if sub.extensions and ext in [e.lower() for e in sub.extensions]:
-            return True
-        if sub.patterns:
-            for pattern in sub.patterns:
-                if fnmatch.fnmatch(file_path.name.lower(), pattern.lower()):
-                    return True
-        if sub.exif_indicators and self._matches_exif_indicators(file_path, sub.exif_indicators):
-            return True
-        return False
-
-    def _matches_exif_indicators(self, file_path: Path, indicators: List[str]) -> bool:
-        _IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp", ".gif", ".webp"}
-        if file_path.suffix.lower() not in _IMAGE_EXTS:
-            return False
-        try:
-            meta = self._read_exif(file_path)
-            sw = meta.get("software_used", "") or ""
-            cam = meta.get("camera_info", "") or ""
-            combined = f"{sw} {cam}".lower()
-            return any(ind.lower() in combined for ind in indicators)
-        except Exception:
-            return False
-
-    def _read_exif(self, file_path: Path) -> Dict[str, Any]:
-        meta: Dict[str, Any] = {"software_used": None, "camera_info": None}
-        try:
-            import PIL.Image
-            with PIL.Image.open(file_path) as img:
-                exif = img.getexif()
-                if exif:
-                    meta["software_used"] = exif.get(305)
-                    make = exif.get(271)
-                    model = exif.get(272)
-                    if make or model:
-                        meta["camera_info"] = f"{make or ''} {model or ''}".strip()
-        except ImportError:
-            pass
-        except Exception:
-            pass
-        return meta
+    def _destination_dir(self, target_path: Path, category_folder: str, rule_folder: str) -> Path:
+        dest = target_path / category_folder
+        if rule_folder:
+            dest = dest.joinpath(*Path(rule_folder).parts)
+        return dest
 
     def _process_files(
         self, files: List[Path], target_path: Path, dry_run: bool
@@ -266,14 +455,23 @@ class FileOrganizer:
             try:
                 if self.progress_callback:
                     self.progress_callback(i + 1, len(files), fp.name)
-                category, subcategory = self._categorize_file(fp)
-                dest_dir = target_path / category / subcategory if subcategory else target_path / category
+                category_folder, rule_folder, rule_name = self._categorize_file(fp)
+                dest_dir = self._destination_dir(target_path, category_folder, rule_folder)
                 if not dry_run and not self.path_manager.ensure_directory(dest_dir):
                     error_log.append(f"Failed to create directory: {dest_dir}")
                     errors += 1
                     continue
                 dest_file = self._get_unique_path(dest_dir / fp.name)
-                op = FileOperation(operation_type=OperationType.MOVE, source=fp, destination=dest_file)
+                op = FileOperation(
+                    operation_type=OperationType.MOVE,
+                    source=fp,
+                    destination=dest_file,
+                    metadata={
+                        "category_folder": category_folder,
+                        "rule_folder": rule_folder,
+                        "rule_name": rule_name,
+                    },
+                )
                 if dry_run:
                     operations.append(op)
                 else:

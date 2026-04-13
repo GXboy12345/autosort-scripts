@@ -25,6 +25,39 @@ def print_welcome(version: str, config_status: Dict[str, Any], undo_info: Dict[s
     console.print(Panel(grid, title=f"[bold]AutoSort[/bold] {version}", border_style="blue"))
 
 
+def notify_category_counts(operations) -> Dict[str, int]:
+    """Aggregate moved files by top-level category folder (for notifications)."""
+    counts: Dict[str, int] = {}
+    for op in operations:
+        if not op.destination:
+            continue
+        md = getattr(op, "metadata", None) or {}
+        cat = md.get("category_folder")
+        if cat:
+            counts[cat] = counts.get(cat, 0) + 1
+        else:
+            leaf = op.destination.parent.name
+            counts[leaf] = counts.get(leaf, 0) + 1
+    return counts
+
+
+def _op_group_key(op) -> str:
+    md = getattr(op, "metadata", None) or {}
+    cat = md.get("category_folder") or ""
+    rule = (md.get("rule_folder") or md.get("rule_name") or "").strip()
+    if cat and rule:
+        return f"{cat} / {rule}"
+    if cat:
+        return cat
+    if op.destination:
+        try:
+            rel = op.destination.parent
+            return rel.name or str(rel)
+        except Exception:
+            return op.destination.parent.name
+    return "?"
+
+
 def print_results(result, dry_run: bool = False) -> None:
     if result.files_processed == 0:
         console.print("[dim]No files to organize.[/dim]")
@@ -36,17 +69,17 @@ def print_results(result, dry_run: bool = False) -> None:
 
     for op in result.operations:
         if op.destination:
-            cat = op.destination.parent.name
-            category_counts[cat] = category_counts.get(cat, 0) + 1
+            label = _op_group_key(op)
+            category_counts[label] = category_counts.get(label, 0) + 1
             try:
                 sz = op.source.stat().st_size if op.source.exists() else 0
             except OSError:
                 sz = 0
-            category_sizes[cat] = category_sizes.get(cat, 0) + sz
+            category_sizes[label] = category_sizes.get(label, 0) + sz
             total_size += sz
 
     table = Table(title="Preview" if dry_run else "Results", show_lines=False)
-    table.add_column("Category", style="cyan")
+    table.add_column("Category / rule", style="cyan")
     table.add_column("Files", justify="right", style="green")
     table.add_column("Size", justify="right", style="yellow")
 
@@ -106,8 +139,9 @@ def print_categories(config: Dict[str, Any]) -> None:
         ext_str = ", ".join(exts[:5])
         if len(exts) > 5:
             ext_str += f" (+{len(exts) - 5})"
-        subs = len(data.get("subcategories", {}))
-        table.add_row(name, data.get("folder_name", name), ext_str, str(subs) if subs else "")
+        rules = data.get("rules") or []
+        nrules = len(rules) if isinstance(rules, list) else 0
+        table.add_row(name, data.get("folder_name", name), ext_str, str(nrules) if nrules else "")
     console.print(table)
 
 
