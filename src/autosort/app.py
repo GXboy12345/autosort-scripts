@@ -31,6 +31,7 @@ class AutoSortApp(App):
     BINDINGS = [
         Binding("d", "sort_desktop", "Sort Desktop"),
         Binding("l", "sort_downloads", "Sort Downloads"),
+        Binding("r", "resort", "Re-sort"),
         Binding("b", "browse", "Browse"),
         Binding("w", "watch_toggle", "Watch"),
         Binding("u", "undo_last", "Undo"),
@@ -54,6 +55,7 @@ class AutoSortApp(App):
             with Horizontal(classes="action-bar"):
                 yield Button("Sort Desktop", id="btn-desktop", variant="primary")
                 yield Button("Sort Downloads", id="btn-downloads", variant="primary")
+                yield Button("Re-sort", id="btn-resort")
                 yield Button("Browse...", id="btn-browse")
                 yield Button("Watch", id="btn-watch", variant="success")
                 yield Button("Undo", id="btn-undo", variant="warning")
@@ -80,6 +82,10 @@ class AutoSortApp(App):
     def on_downloads(self) -> None:
         self.action_sort_downloads()
 
+    @on(Button.Pressed, "#btn-resort")
+    def on_resort(self) -> None:
+        self.action_resort()
+
     @on(Button.Pressed, "#btn-browse")
     def on_browse(self) -> None:
         self.action_browse()
@@ -101,6 +107,13 @@ class AutoSortApp(App):
 
     def action_sort_downloads(self) -> None:
         self._run_sort(self.pm.get_downloads_path())
+
+    def action_resort(self) -> None:
+        selected = self.pm.select_folder_dialog(title="Select folder to re-sort (its Autosort/ subfolder)")
+        if selected:
+            self._run_resort(selected)
+        else:
+            self._log("[yellow]No folder selected.[/yellow]")
 
     def action_browse(self) -> None:
         selected = self.pm.select_folder_dialog()
@@ -182,6 +195,52 @@ class AutoSortApp(App):
             notify_sort_complete(notify_category_counts(result.operations))
         else:
             self.call_from_thread(log.write, "[dim]No files to organize.[/dim]")
+
+    @work(thread=True)
+    def _run_resort(self, source: Path) -> None:
+        log = self.query_one("#log-panel", RichLog)
+        autosort_root = self.pm.get_target_path(source)
+        if not autosort_root.is_dir():
+            self.call_from_thread(
+                log.write, f"[dim]No Autosort folder in {source.name}.[/dim]"
+            )
+            return
+
+        self.call_from_thread(
+            log.write, f"\n[bold]Re-sorting {source.name}/Autosort...[/bold]"
+        )
+
+        ignore = source / ".sortignore"
+        if ignore.exists():
+            self.fo.load_ignore_patterns(ignore)
+
+        tid = self.um.start_transaction(f"Re-sort {source.name}")
+        self.fo.set_current_transaction(tid)
+        self.fo.invalidate_cache()
+
+        def cb(current, total, name):
+            self.call_from_thread(
+                log.write, f"  [{current}/{total}] {name}"
+            )
+
+        self.fo.set_progress_callback(cb)
+        result = self.fo.resort_directory(source, dry_run=False)
+
+        if result.files_moved > 0:
+            self.um.commit_transaction(tid)
+            self.call_from_thread(
+                log.write,
+                f"[green]Re-sorted: {result.files_moved} files moved, "
+                f"{result.errors} errors[/green]",
+            )
+            from autosort.console import notify_category_counts
+            from autosort.services.notify import notify_sort_complete
+
+            notify_sort_complete(notify_category_counts(result.operations))
+        else:
+            self.call_from_thread(
+                log.write, f"[dim]All files in {source.name}/Autosort already in correct locations.[/dim]"
+            )
 
     def _start_watching(self) -> None:
         from autosort.core.watcher import DirectoryWatcher

@@ -366,6 +366,37 @@ class FileOrganizer:
             )
         return self._process_files(files, target_path, dry_run)
 
+    def resort_directory(
+        self, source_path: Path, dry_run: bool = False
+    ) -> OrganizationResult:
+        """Re-sort files already inside the Autosort/ output folder.
+
+        Recursively walks ``source_path/Autosort/``, re-categorises every file
+        against the current rules, and moves only those whose correct
+        destination differs from their current location.
+        """
+        autosort_root = self.path_manager.get_target_path(source_path)
+        if not autosort_root.is_dir():
+            return OrganizationResult(
+                success=False,
+                files_processed=0,
+                files_moved=0,
+                errors=1,
+                operations=[],
+                error_log=[f"No Autosort folder found at {autosort_root}"],
+            )
+        files = self._scan_files_recursive(autosort_root)
+        if not files:
+            return OrganizationResult(
+                success=True,
+                files_processed=0,
+                files_moved=0,
+                errors=0,
+                operations=[],
+                error_log=[],
+            )
+        return self._process_resort(files, autosort_root, dry_run)
+
     def analyze_files(self, source_path: Path) -> Dict[str, Any]:
         try:
             files = self._scan_files(source_path)
@@ -410,6 +441,21 @@ class FileOrganizer:
                 result.append(item)
         except Exception as e:
             logger.error(f"Error scanning directory: {e}")
+        return result
+
+    def _scan_files_recursive(self, root: Path) -> List[Path]:
+        result = []
+        try:
+            for item in root.rglob("*"):
+                if not item.is_file():
+                    continue
+                if self._should_skip_file(item):
+                    continue
+                if self._should_ignore_file(item):
+                    continue
+                result.append(item)
+        except Exception as e:
+            logger.error(f"Error scanning directory tree: {e}")
         return result
 
     _ALWAYS_SKIP = frozenset({
@@ -494,6 +540,83 @@ class FileOrganizer:
             operations=operations,
             error_log=error_log,
         )
+
+    def _process_resort(
+        self, files: List[Path], autosort_root: Path, dry_run: bool
+    ) -> OrganizationResult:
+        operations: List[FileOperation] = []
+        error_log: List[str] = []
+        files_moved = 0
+        errors = 0
+
+        for i, fp in enumerate(files):
+            try:
+                if self.progress_callback:
+                    self.progress_callback(i + 1, len(files), fp.name)
+                category_folder, rule_folder, rule_name = self._categorize_file(fp)
+                dest_dir = self._destination_dir(autosort_root, category_folder, rule_folder)
+                dest_file = dest_dir / fp.name
+                if fp.parent.resolve() == dest_dir.resolve():
+                    continue
+                if dest_file.exists() and dest_file.resolve() == fp.resolve():
+                    continue
+                dest_file = self._get_unique_path(dest_file)
+                op = FileOperation(
+                    operation_type=OperationType.MOVE,
+                    source=fp,
+                    destination=dest_file,
+                    metadata={
+                        "category_folder": category_folder,
+                        "rule_folder": rule_folder,
+                        "rule_name": rule_name,
+                    },
+                )
+                if dry_run:
+                    operations.append(op)
+                else:
+                    if not self.path_manager.ensure_directory(dest_dir):
+                        error_log.append(f"Failed to create directory: {dest_dir}")
+                        errors += 1
+                        continue
+                    if self._safe_move_file(fp, dest_file):
+                        operations.append(op)
+                        self._add_operation_to_transaction(op)
+                        files_moved += 1
+                    else:
+                        error_log.append(f"Failed to move: {fp.name}")
+                        errors += 1
+            except Exception as e:
+                error_log.append(f"Error processing {fp.name}: {e}")
+                errors += 1
+
+        if not dry_run:
+            self._prune_empty_dirs(autosort_root)
+
+        return OrganizationResult(
+            success=errors == 0,
+            files_processed=len(files),
+            files_moved=files_moved,
+            errors=errors,
+            operations=operations,
+            error_log=error_log,
+        )
+
+    @staticmethod
+    def _prune_empty_dirs(root: Path) -> None:
+        """Remove empty subdirectories left behind after re-sorting (bottom-up)."""
+        for dirpath in sorted(root.rglob("*"), key=lambda p: -len(p.parts)):
+            if dirpath.is_dir():
+                try:
+                    remaining = [
+                        c for c in dirpath.iterdir()
+                        if c.name not in (".DS_Store", "Thumbs.db", "desktop.ini")
+                    ]
+                    if not remaining:
+                        for junk in dirpath.iterdir():
+                            junk.unlink(missing_ok=True)
+                        dirpath.rmdir()
+                except OSError:
+                    pass
 
     def _get_unique_path(self, dest: Path) -> Path:
         if not dest.exists():

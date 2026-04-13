@@ -122,6 +122,67 @@ def run(path, desktop, downloads, dry_run, quiet):
 
 
 @cli.command()
+@click.argument("path", required=False)
+@click.option("--desktop", is_flag=True, help="Re-sort ~/Desktop/Autosort")
+@click.option("--downloads", is_flag=True, help="Re-sort ~/Downloads/Autosort")
+@click.option("--dry-run", is_flag=True, help="Preview without moving files")
+@click.option("--quiet", is_flag=True, help="Suppress notifications")
+def resort(path, desktop, downloads, dry_run, quiet):
+    """Re-sort files already in an Autosort folder.
+
+    Recursively walks the Autosort/ output directory, re-categorises every
+    file against the current rules, and moves only those whose correct
+    destination has changed (e.g. after editing config or updating rules).
+    Files already in the right place are left untouched.
+    """
+    cm, pm, um, fo = _boot()
+    target = _resolve_path(path, desktop, downloads, pm)
+    if target is None:
+        target = pm.select_folder_dialog()
+    if target is None:
+        print_error("No directory selected.")
+        raise SystemExit(1)
+
+    autosort_root = pm.get_target_path(target)
+    if not autosort_root.is_dir():
+        print_error(f"No Autosort folder found at {autosort_root}")
+        raise SystemExit(1)
+
+    ignore_file = target / ".sortignore"
+    if not ignore_file.exists():
+        ignore_file = Path.home() / ".config" / "autosort" / ".sortignore"
+    fo.load_ignore_patterns(ignore_file)
+
+    tid = None
+    if not dry_run:
+        tid = um.start_transaction(f"Re-sort {target.name}")
+        fo.set_current_transaction(tid)
+
+    with progress_bar() as prog:
+        task = prog.add_task(f"{'Preview' if dry_run else 'Re-sorting'} {target.name}/Autosort", total=0)
+
+        def cb(current, total, name):
+            prog.update(task, total=total, completed=current, description=name)
+
+        fo.set_progress_callback(cb)
+        result = fo.resort_directory(target, dry_run=dry_run)
+
+    console.print()
+    print_results(result, dry_run=dry_run)
+
+    if dry_run and result.operations:
+        print_file_list(result.operations, autosort_root)
+
+    if not dry_run and tid and result.files_moved > 0:
+        um.commit_transaction(tid)
+        if not quiet:
+            from autosort.services.notify import notify_sort_complete
+            notify_sort_complete(notify_category_counts(result.operations), quiet=quiet)
+
+    raise SystemExit(0 if result.success else 1)
+
+
+@cli.command()
 @click.argument("paths", nargs=-1)
 @click.option("--desktop", is_flag=True, help="Watch ~/Desktop")
 @click.option("--downloads", is_flag=True, help="Watch ~/Downloads")
