@@ -1,0 +1,45 @@
+Screen {
+    layout: vertical;
+}
+
+#main-container {
+    height: 1fr;
+    padding: 1 2;
+}
+
+.action-bar {
+    dock: top;
+    height: auto;
+    padding: 1 2;
+}
+
+.action-bar Button {
+    margin: 0 1;
+}
+
+#status-bar {
+    dock: bottom;
+    height: 1;
+    background: $surface;
+    padding: 0 2;
+}
+
+#log-panel {
+    height: 1fr;
+    border: round $primary;
+    padding: 0 1;
+}
+
+#results-table {
+    height: auto;
+    max-height: 60%;
+}
+
+.hidden {
+    display: none;
+}
+
+#watch-status {
+    text-style: bold;
+    padding: 1 0;
+}
